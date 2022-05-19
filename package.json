@@ -1,7 +1,7 @@
 {
 	"name": "ohmystart",
 	"version": "1.0.0",
-	"homepage": "https://aleksandrserov.github.io/spot",
+	"homepage": "https://aleksandrserov.github.io/snake-ai",
 	"description": "East start react project",
 	"scripts": {
 		"start": "tsc --noEmit --watch & parcel ./src/index.html --port 8080 --open --watch-for-stdin",

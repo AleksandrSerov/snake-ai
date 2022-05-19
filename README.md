@@ -1,12 +1,12 @@
-# Conway's Game of Life
-## [PLAY](https://aleksandrserov.github.io/spot/)
+# Snake AI
+## [PLAY](https://aleksandrserov.github.io/snake-ui/)
 
 ![Alt Text](./demo.gif)
 ## How to start
 
 ```bash
-$ git clone git@github.com:AleksandrSerov/spot.git
-$ cd spot
+$ git clone git@github.com:AleksandrSerov/snake-ai.git
+$ cd snake-ai
 $ yarn
 $ yarn start
 ```
