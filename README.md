@@ -1,7 +1,6 @@
 # Snake AI
 ## [PLAY](https://aleksandrserov.github.io/snake-ui/)
 
-![Alt Text](./demo.gif)
 ## How to start
 
 ```bash
