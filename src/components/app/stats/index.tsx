@@ -7,14 +7,28 @@ type Props = {
 	canvasWidth: number;
 	canvasHeight: number;
 	className?: string;
-	points: number;
+	scores: number;
+	eatenFoodCount: number;
+	lifeTime: number;
+	remainingTime: string;
 };
 
-export const Stats: VFC<Props> = ({ canvasWidth, canvasHeight, points, className }) => (
+export const Stats: VFC<Props> = ({
+	canvasWidth,
+	canvasHeight,
+	scores,
+	className,
+	lifeTime,
+	eatenFoodCount,
+	remainingTime,
+}) => (
 	<div className={ cn(styles.stats, className) }>
 		<div>
 			Canvas size: {canvasWidth}px X {canvasHeight}px
 		</div>
-		<div>Points: {points}</div>
+		<div>Scores: {scores}</div>
+		<div>Life time: {lifeTime}</div>
+		<div>Remaining time: {remainingTime}</div>
+		<div>Eaten food count: {eatenFoodCount}</div>
 	</div>
 );

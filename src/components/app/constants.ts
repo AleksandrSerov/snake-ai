@@ -1,20 +1,38 @@
-export const GAME_RULES = {
-	default: {
-		b: [3],
-		s: [2, 3],
-	},
-	corals: {
-		b: [3],
-		s: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-	},
-	islands: {
-		b: [5, 6, 7, 8],
-		s: [4, 5, 6, 7, 8],
-	},
-	fractals: {
-		b: [1],
-		s: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-	},
-};
+import { Snake } from '.';
 
 export const DEFAULT_DOT_SIZE = 20;
+export const DIRECTION_BY_KEY = {
+	KeyA: 'left',
+	KeyD: 'right',
+	KeyS: 'down',
+	KeyW: 'up',
+} as const;
+export const OPPOSITE_DIRECTION = {
+	up: 'down',
+	down: 'up',
+	left: 'right',
+	right: 'left',
+} as const;
+export const DEFAULT_DIRECTION = 'up';
+
+export const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
+export const CANVAS_HEIGHT = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
+export const midI = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2) - 1;
+export const midJ = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2) - 1;
+
+export const DEFAULT_SNAKE_SELF = [
+	[midI, midJ],
+	[midI + 1, midJ],
+	[midI + 2, midJ],
+	[midI + 3, midJ],
+] as Snake;
+
+export const DEFAULT_SNAKE = {
+	state: 'alive' as const,
+	foodEaten: false,
+	self: DEFAULT_SNAKE_SELF,
+};
+
+export const EMPTY_VALUE = 0;
+export const BORDER_VALUE = 1;
+export const FOOD_VALUE = 2;

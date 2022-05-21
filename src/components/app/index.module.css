@@ -15,7 +15,7 @@
 	padding: 24px 18px;
 	top: 60px;
 	left: 20px;
-	max-width: 300px;
+	min-width: 100px;
 	background-color: rgb(32, 178, 170, 0.8);
 	display: grid;
 	grid-gap: 24px;

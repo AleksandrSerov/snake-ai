@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Stats from 'stats.js';
 
@@ -30,19 +29,5 @@ const initStats = () => {
 process.env.NODE_ENV !== 'production' && initStats();
 
 const root = document.getElementById('app');
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 
-const WrappedApp = () => {
-	const [, updateState] = useState();
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	//@ts-ignore
-	const forceUpdate = useCallback(() => updateState({}), []);
-
-	useEffect(() => {
-		window.addEventListener('resize', forceUpdate);
-	}, []);
-
-	return <App />;
-};
-
-ReactDOM.render(<WrappedApp />, root);
+ReactDOM.render(<App />, root);
