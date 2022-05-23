@@ -1,0 +1,86 @@
+*,
+*:before,
+*:after {
+	box-sizing: border-box;
+}
+
+* {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html,
+body,
+#root_4e43e8 {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: #f0f0f0;
+}
+
+.stats_87590a {
+	font-size: 12px;
+	display: grid;
+	grid-template-columns: repeat(5, max-content);
+	text-transform: uppercase;
+}
+
+.stats_87590a div {
+	padding: 0 5px;
+	border-right: 1px solid black;
+}
+
+.stats_87590a div:last-child {
+	border-right: none;
+}
+
+.app_93070a {
+	position: relative;
+	display: grid;
+	grid-template-columns: min-content min-content;
+	justify-content: center;
+}
+
+.canvas_93070a {
+	display: grid;
+	padding: 24px;
+	background-color: rgb(32, 178, 170, 0.8);
+}
+
+.controls_93070a {
+	padding: 24px 18px;
+	top: 60px;
+	left: 20px;
+	min-width: 100px;
+	background-color: rgb(32, 178, 170, 0.8);
+	display: grid;
+	grid-gap: 24px;
+}
+
+.dropdownButton_93070a {
+	cursor: pointer;
+	text-transform: uppercase;
+	text-align: right;
+}
+
+.stats_93070a {
+	background-color: rgb(32, 178, 170, 0.8);
+}
+
+@media (max-width: 991px) {
+	.controls_93070a {
+		overflow: scroll;
+		max-height: 300px;
+	}
+}
+
+*,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+/*# sourceMappingURL=index.b537d740.css.map */
