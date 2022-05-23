@@ -1,11 +1,12 @@
 .stats {
+	font-size: 12px;
 	display: grid;
 	grid-template-columns: repeat(5, max-content);
 	text-transform: uppercase;
 }
 
 .stats div {
-	padding: 0 10px;
+	padding: 0 5px;
 	border-right: 1px solid black;
 }
 .stats div:last-child {

@@ -47,6 +47,7 @@ const DEFAULT_DOTS = (() => {
 })();
 
 export const App: FC = () => {
+	const [startTime, setStartTime] = useState<null | number>(null);
 	const [snake, setSnake] = useState<{
 		state: 'alive' | 'dead';
 		foodEaten: boolean;
@@ -56,6 +57,13 @@ export const App: FC = () => {
 		foodEaten: false,
 		self: DEFAULT_SNAKE_SELF,
 	});
+
+	const lifeTime = !startTime
+		? 0
+		: (Math.trunc((Date.now() - startTime) / 1000) as unknown as number);
+	const eatenFoodCount = snake.self.length - DEFAULT_SNAKE_SELF.length;
+	const scores = Math.pow(lifeTime, 0.5) + eatenFoodCount * 10;
+	const ramainingTime = 30 - lifeTime;
 	const [direction, setDirection] = useState<Direction>('up');
 	const [playState, setPlayState] = useState<'iddle' | 'playing'>('iddle');
 	const [dotSize] = useState(DEFAULT_DOT_SIZE);
@@ -63,7 +71,6 @@ export const App: FC = () => {
 	const dotsRef = useRef(dots);
 	const [food, setFood] = useState<Food>(getRandomEmptyDotPoint(dots));
 	const timerRef = useRef<ReturnType<typeof setInterval>>();
-	const [startTime, setStartTime] = useState<null | number>(null);
 
 	useEffect(() => {
 		dotsRef.current = dots;
@@ -174,6 +181,8 @@ export const App: FC = () => {
 
 		const [foodI, foodJ] = food;
 
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		//@ts-ignore
 		nextDots[foodI][foodJ] = FOOD_VALUE;
 		setDots(nextDots);
 
@@ -190,16 +199,16 @@ export const App: FC = () => {
 	}, [snake.state]);
 
 	useEffect(() => {
+		if (ramainingTime <= 0) {
+			setPlayState('iddle');
+		}
+	}, [ramainingTime]);
+
+	useEffect(() => {
 		window.addEventListener('keypress', handleChangeDirection);
 
 		return () => window.removeEventListener('keypress', handleChangeDirection);
 	});
-	const lifeTime = !startTime
-		? Number((0).toFixed(2))
-		: Number(((Date.now() - startTime) / 1000).toFixed(2));
-	const eatenFoodCount = snake.self.length - DEFAULT_SNAKE_SELF.length;
-	const scores = parseFloat(Math.pow(lifeTime, 0.5)) + eatenFoodCount * 10;
-	const ramainingTime = 30 - lifeTime;
 
 	return (
 		<div className={ styles.app }>
@@ -208,9 +217,9 @@ export const App: FC = () => {
 					className={ styles.stats }
 					canvasWidth={ CANVAS_WIDTH }
 					canvasHeight={ CANVAS_HEIGHT }
-					scores={ scores.toFixed(2) }
+					scores={ scores.toFixed(2) as unknown as number }
 					remainingTime={ ramainingTime.toFixed(2) }
-					lifeTime={ lifeTime.toFixed(2) }
+					lifeTime={ lifeTime.toFixed(2) as unknown as number }
 					eatenFoodCount={ eatenFoodCount }
 				/>
 				<Stage
@@ -228,7 +237,6 @@ export const App: FC = () => {
 					<Grid width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } dotWidth={ dotSize } />
 				</Stage>
 			</div>
-			<div className={ styles.controls }>{playState}</div>
 		</div>
 	);
 };

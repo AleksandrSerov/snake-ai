@@ -24,11 +24,11 @@ export const Stats: VFC<Props> = ({
 }) => (
 	<div className={ cn(styles.stats, className) }>
 		<div>
-			Canvas size: {canvasWidth}px X {canvasHeight}px
+			{canvasWidth}px X {canvasHeight}px
 		</div>
 		<div>Scores: {scores}</div>
 		<div>Life time: {lifeTime}</div>
 		<div>Remaining time: {remainingTime}</div>
-		<div>Eaten food count: {eatenFoodCount}</div>
+		<div>Eaten food: {eatenFoodCount}</div>
 	</div>
 );
