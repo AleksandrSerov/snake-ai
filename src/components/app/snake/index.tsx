@@ -19,7 +19,7 @@ export type SnakeProps = {
 	setPlayState: (playState: 'iddle' | 'playing') => void;
 	dots: Dots;
 	food: Point;
-	onFoodEaten: () => void;
+	onFoodEaten: (snake: Coordinates) => void;
 	onStateChange?: (state: 'alive' | 'dead') => void;
 };
 export const Snake: React.FC<SnakeProps> = ({
@@ -80,7 +80,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		setCoordinates(updatedSnake);
 		setState(state);
 		if (foodEaten) {
-			onFoodEaten();
+			onFoodEaten(updatedSnake);
 		}
 	};
 

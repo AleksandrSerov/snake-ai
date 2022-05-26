@@ -37,11 +37,11 @@ const DEFAULT_DOTS = (() => {
 export const App: FC = () => {
 	const [eatenFoodCount, setEatenFoodCount] = useState(0);
 	const [playState, setPlayState] = useState<'iddle' | 'playing'>('iddle');
-	const [food, setFood] = useState<Point>(getRandomEmptyDotPoint(DEFAULT_DOTS));
+	const [food, setFood] = useState<Point>(getRandomEmptyDotPoint(DEFAULT_DOTS, [[0, 0]]));
 
-	const handleFoodEaten = () => {
+	const handleFoodEaten: SnakeProps['onFoodEaten'] = (snake) => {
 		setEatenFoodCount((prevCount) => prevCount + 1);
-		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS));
+		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS, snake));
 	};
 
 	const handleStateChange: SnakeProps['onStateChange'] = (snakeState) => {

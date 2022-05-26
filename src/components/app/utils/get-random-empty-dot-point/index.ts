@@ -1,8 +1,11 @@
+import matches from 'lodash/matches';
+
 import { getRandomInt } from '../../../../utils/get-random-int';
 import { Dots } from '../..';
 import { EMPTY_VALUE } from '../../constants';
+import { Coordinates } from '../../snake';
 
-export const getRandomEmptyDotPoint = (dots: Dots) => {
+export const getRandomEmptyDotPoint = (dots: Dots, exclude: Coordinates) => {
 	const coordsForRandom = dots
 		.map((array, i) =>
 			array.map((value, j) => {
@@ -14,7 +17,8 @@ export const getRandomEmptyDotPoint = (dots: Dots) => {
 			}),
 		)
 		.flat(1)
-		.filter((v) => v);
+		.filter((v) => v)
+		.filter((value) => !exclude.some((ex) => matches(ex)(value)));
 
 	const point = coordsForRandom[getRandomInt(coordsForRandom.length)];
 
