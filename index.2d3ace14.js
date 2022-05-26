@@ -22891,12 +22891,12 @@ var _react = require("react");
 var _reactPixi = require("@inlet/react-pixi");
 var _utils = require("@pixi/utils");
 var _generateDots = require("./utils/generate-dots");
-var _getNextTickSnake = require("./utils/get-next-tick-snake");
 var _getRandomEmptyDotPoint = require("./utils/get-random-empty-dot-point");
 var _clickableAria = require("./clickable-aria");
 var _constants = require("./constants");
+var _food = require("./food");
 var _grid = require("./grid");
-var _rectangle = require("./rectangle");
+var _snake = require("./snake");
 var _stats = require("./stats");
 var _indexModuleCss = require("./index.module.css");
 var _indexModuleCssDefault = parcelHelpers.interopDefault(_indexModuleCss);
@@ -22909,141 +22909,30 @@ const DEFAULT_DOTS = (()=>{
         height: _constants.CANVAS_HEIGHT,
         size: _constants.DEFAULT_DOT_SIZE
     });
-    _constants.DEFAULT_SNAKE_SELF.forEach(([i, j])=>{
-        dots[i][j] = _constants.BORDER_VALUE;
-    });
     return dots;
 })();
 const App = ()=>{
     _s();
-    const [startTime, setStartTime] = _react.useState(null);
-    const [snake, setSnake] = _react.useState({
-        state: 'alive',
-        foodEaten: false,
-        self: _constants.DEFAULT_SNAKE_SELF
-    });
-    const lifeTime = !startTime ? 0 : Math.trunc((Date.now() - startTime) / 1000);
-    const eatenFoodCount = snake.self.length - _constants.DEFAULT_SNAKE_SELF.length;
-    const scores = Math.pow(lifeTime, 0.5) + eatenFoodCount * 10;
-    const ramainingTime = 30 - lifeTime;
-    const [direction, setDirection] = _react.useState('up');
+    const [eatenFoodCount, setEatenFoodCount] = _react.useState(0);
     const [playState, setPlayState] = _react.useState('iddle');
-    const [dotSize] = _react.useState(_constants.DEFAULT_DOT_SIZE);
-    const [dots, setDots] = _react.useState(DEFAULT_DOTS);
-    const dotsRef = _react.useRef(dots);
-    const [food, setFood] = _react.useState(_getRandomEmptyDotPoint.getRandomEmptyDotPoint(dots));
-    const timerRef = _react.useRef();
-    _react.useEffect(()=>{
-        dotsRef.current = dots;
-    }, [
-        dots
-    ]);
-    const handleChangeDirection = (e)=>{
-        if (playState === 'iddle') {
-            setPlayState('playing');
-            setStartTime(Date.now());
-        }
-        const code = e.code;
-        const newDirection = _constants.DIRECTION_BY_KEY[code];
-        const isOppositeDirection = direction === _constants.OPPOSITE_DIRECTION[newDirection];
-        const isSameDirection = direction === newDirection;
-        const nextDotTheOwnBody = _getNextTickSnake.getNextTickSnake(snake.self, direction, dots).self[0] === snake.self[1];
-        if (isSameDirection || isOppositeDirection) return;
-        if (nextDotTheOwnBody) return;
-        setDirection(newDirection);
-        handleTick();
+    const [food, setFood] = _react.useState(_getRandomEmptyDotPoint.getRandomEmptyDotPoint(DEFAULT_DOTS));
+    const handleFoodEaten = ()=>{
+        setEatenFoodCount((prevCount)=>prevCount + 1
+        );
+        setFood(_getRandomEmptyDotPoint.getRandomEmptyDotPoint(DEFAULT_DOTS));
     };
-    const handleTick = ()=>{
-        setSnake((prevSnake)=>{
-            const { state , self: updatedSnake , foodEaten ,  } = _getNextTickSnake.getNextTickSnake(prevSnake.self, direction, dotsRef.current);
-            if (foodEaten) setFood(null);
-            return {
-                state,
-                self: updatedSnake,
-                foodEaten
-            };
-        });
-    };
-    _react.useEffect(()=>{
-        if (playState === 'iddle') {
-            clearInterval(timerRef.current);
-            timerRef.current = undefined;
-            setDots(DEFAULT_DOTS);
-            setDirection(_constants.DEFAULT_DIRECTION);
-            setSnake(_constants.DEFAULT_SNAKE);
-            return;
-        }
-        if (playState === 'playing') {
-            clearInterval(timerRef.current);
-            const timerId = setInterval(handleTick, 100);
-            timerRef.current = timerId;
-            return;
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        playState,
-        direction
-    ]);
-    const renderDot = ([i, j])=>{
-        const dotValue = dots[i][j];
-        if (dotValue === 0) return null;
-        return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_rectangle.Rectangle.Graphics, {
-            x: j * dotSize,
-            y: i * dotSize,
-            width: dotSize,
-            height: dotSize,
-            dotValue: dotValue
-        }, `${i}_${j}`, false, {
-            fileName: "src/components/app/index.tsx",
-            lineNumber: 151,
-            columnNumber: 4
-        }, undefined));
-    };
-    _react.useEffect(()=>{
-        if (food === null) {
-            setFood(_getRandomEmptyDotPoint.getRandomEmptyDotPoint(dots));
-            return;
-        }
-        const nextDots = _generateDots.generateDots({
-            generateValue: ()=>0
-            ,
-            width: _constants.CANVAS_WIDTH,
-            height: _constants.CANVAS_HEIGHT,
-            size: _constants.DEFAULT_DOT_SIZE
-        });
-        snake.self.forEach((snakeBody)=>{
-            const [i, j] = snakeBody;
-            nextDots[i][j] = _constants.BORDER_VALUE;
-        });
-        const [foodI, foodJ] = food;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        nextDots[foodI][foodJ] = _constants.FOOD_VALUE;
-        setDots(nextDots);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        food,
-        snake.self
-    ]);
-    _react.useEffect(()=>{
-        if (snake.state === 'dead') {
+    const handleStateChange = (snakeState)=>{
+        if (snakeState === 'dead') {
             alert('Game over');
             setPlayState('iddle');
             return;
         }
-    }, [
-        snake.state
-    ]);
+    };
     _react.useEffect(()=>{
-        if (ramainingTime <= 0) setPlayState('iddle');
+        if (playState === 'playing') setEatenFoodCount(0);
     }, [
-        ramainingTime
+        playState
     ]);
-    _react.useEffect(()=>{
-        window.addEventListener('keypress', handleChangeDirection);
-        return ()=>window.removeEventListener('keypress', handleChangeDirection)
-        ;
-    });
     return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
         className: _indexModuleCssDefault.default.app,
         children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
@@ -23053,13 +22942,11 @@ const App = ()=>{
                     className: _indexModuleCssDefault.default.stats,
                     canvasWidth: _constants.CANVAS_WIDTH,
                     canvasHeight: _constants.CANVAS_HEIGHT,
-                    scores: scores.toFixed(2),
-                    remainingTime: ramainingTime.toFixed(2),
-                    lifeTime: lifeTime.toFixed(2),
-                    eatenFoodCount: eatenFoodCount
+                    eatenFoodCount: eatenFoodCount,
+                    playState: playState
                 }, void 0, false, {
                     fileName: "src/components/app/index.tsx",
-                    lineNumber: 216,
+                    lineNumber: 65,
                     columnNumber: 5
                 }, undefined),
                 /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Stage, {
@@ -23075,43 +22962,58 @@ const App = ()=>{
                             height: _constants.CANVAS_HEIGHT
                         }, void 0, false, {
                             fileName: "src/components/app/index.tsx",
-                            lineNumber: 233,
+                            lineNumber: 80,
                             columnNumber: 6
                         }, undefined),
-                        dots.map((dotsArray, i)=>dotsArray.map((_, j)=>renderDot([
-                                    i,
-                                    j
-                                ])
-                            )
-                        ),
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_snake.Snake, {
+                            dotSize: _constants.DEFAULT_DOT_SIZE,
+                            playState: playState,
+                            setPlayState: setPlayState,
+                            dots: DEFAULT_DOTS,
+                            food: food,
+                            onFoodEaten: handleFoodEaten,
+                            onStateChange: handleStateChange
+                        }, void 0, false, {
+                            fileName: "src/components/app/index.tsx",
+                            lineNumber: 81,
+                            columnNumber: 6
+                        }, undefined),
+                        food && /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_food.Food, {
+                            point: food,
+                            dotSize: _constants.DEFAULT_DOT_SIZE
+                        }, void 0, false, {
+                            fileName: "src/components/app/index.tsx",
+                            lineNumber: 90,
+                            columnNumber: 15
+                        }, undefined),
                         /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_grid.Grid, {
                             width: _constants.CANVAS_WIDTH,
                             height: _constants.CANVAS_HEIGHT,
-                            dotWidth: dotSize
+                            dotWidth: _constants.DEFAULT_DOT_SIZE
                         }, void 0, false, {
                             fileName: "src/components/app/index.tsx",
-                            lineNumber: 237,
+                            lineNumber: 92,
                             columnNumber: 6
                         }, undefined)
                     ]
                 }, void 0, true, {
                     fileName: "src/components/app/index.tsx",
-                    lineNumber: 225,
+                    lineNumber: 72,
                     columnNumber: 5
                 }, undefined)
             ]
         }, void 0, true, {
             fileName: "src/components/app/index.tsx",
-            lineNumber: 215,
+            lineNumber: 64,
             columnNumber: 4
         }, undefined)
     }, void 0, false, {
         fileName: "src/components/app/index.tsx",
-        lineNumber: 214,
+        lineNumber: 63,
         columnNumber: 3
     }, undefined));
 };
-_s(App, "omwv9zQ97kzrJRMCwRL7pbRcB3k=");
+_s(App, "oWKBmDV6t9zd3hoFSKIRj5kLSQE=");
 _c = App;
 var _c;
 $RefreshReg$(_c, "App");
@@ -23121,7 +23023,7 @@ $RefreshReg$(_c, "App");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","./utils/generate-dots":"cSHe6","./utils/get-next-tick-snake":"75gk7","./utils/get-random-empty-dot-point":"dgSET","./clickable-aria":"1Xn61","./constants":"5aYOg","./grid":"abmCY","./rectangle":"1ydI7","./stats":"aoWng","./index.module.css":"erp6L","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"1HLK0":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","./utils/generate-dots":"cSHe6","./utils/get-random-empty-dot-point":"dgSET","./constants":"5aYOg","./food":"lTDFx","./grid":"abmCY","./snake":"4uXtV","./stats":"aoWng","./index.module.css":"erp6L","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","./clickable-aria":"1Xn61"}],"1HLK0":[function(require,module,exports) {
 module.exports = require('./dist/react-pixi.es-dev');
 
 },{"./dist/react-pixi.es-dev":"m9RWQ"}],"m9RWQ":[function(require,module,exports) {
@@ -80479,42 +80381,613 @@ parcelHelpers.export(exports, "getRandomInt", ()=>getRandomInt
 const getRandomInt = (max)=>Math.floor(Math.random() * max)
 ;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"75gk7":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dgSET":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getRandomEmptyDotPoint", ()=>getRandomEmptyDotPoint
+);
+var _getRandomInt = require("../../../../utils/get-random-int");
+var _constants = require("../../constants");
+const getRandomEmptyDotPoint = (dots)=>{
+    const coordsForRandom = dots.map((array, i)=>array.map((value, j)=>{
+            if (value === _constants.EMPTY_VALUE) return [
+                i,
+                j
+            ];
+            return undefined;
+        })
+    ).flat(1).filter((v)=>v
+    );
+    const point = coordsForRandom[_getRandomInt.getRandomInt(coordsForRandom.length)];
+    return point;
+};
+
+},{"../../../../utils/get-random-int":"01k28","../../constants":"5aYOg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5aYOg":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "DEFAULT_DOT_SIZE", ()=>DEFAULT_DOT_SIZE
+);
+parcelHelpers.export(exports, "DIRECTION_BY_KEY", ()=>DIRECTION_BY_KEY
+);
+parcelHelpers.export(exports, "OPPOSITE_DIRECTION", ()=>OPPOSITE_DIRECTION
+);
+parcelHelpers.export(exports, "DEFAULT_DIRECTION", ()=>DEFAULT_DIRECTION
+);
+parcelHelpers.export(exports, "CANVAS_WIDTH", ()=>CANVAS_WIDTH
+);
+parcelHelpers.export(exports, "CANVAS_HEIGHT", ()=>CANVAS_HEIGHT
+);
+parcelHelpers.export(exports, "midI", ()=>midI
+);
+parcelHelpers.export(exports, "midJ", ()=>midJ
+);
+parcelHelpers.export(exports, "DEFAULT_SNAKE_SELF", ()=>DEFAULT_SNAKE_SELF
+);
+parcelHelpers.export(exports, "DEFAULT_SNAKE", ()=>DEFAULT_SNAKE
+);
+parcelHelpers.export(exports, "EMPTY_VALUE", ()=>EMPTY_VALUE
+);
+parcelHelpers.export(exports, "BORDER_VALUE", ()=>BORDER_VALUE
+);
+parcelHelpers.export(exports, "FOOD_VALUE", ()=>FOOD_VALUE
+);
+const DEFAULT_DOT_SIZE = 20;
+const DIRECTION_BY_KEY = {
+    KeyA: 'left',
+    KeyD: 'right',
+    KeyS: 'down',
+    KeyW: 'up'
+};
+const OPPOSITE_DIRECTION = {
+    up: 'down',
+    down: 'up',
+    left: 'right',
+    right: 'left'
+};
+const DEFAULT_DIRECTION = 'up';
+const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
+const CANVAS_HEIGHT = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
+const midI = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2) - 1;
+const midJ = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2) - 1;
+const DEFAULT_SNAKE_SELF = [
+    [
+        midI,
+        midJ
+    ],
+    [
+        midI + 1,
+        midJ
+    ],
+    [
+        midI + 2,
+        midJ
+    ],
+    [
+        midI + 3,
+        midJ
+    ], 
+];
+const DEFAULT_SNAKE = {
+    state: 'alive',
+    foodEaten: false,
+    self: DEFAULT_SNAKE_SELF
+};
+const EMPTY_VALUE = 0;
+const BORDER_VALUE = 1;
+const FOOD_VALUE = 2;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lTDFx":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$b811 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$b811.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Food", ()=>Food
+);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _rectangle = require("../rectangle");
+const Food = ({ point , dotSize  })=>{
+    const [i, j] = point;
+    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_rectangle.Rectangle.Graphics, {
+        x: j * dotSize,
+        y: i * dotSize,
+        width: dotSize,
+        height: dotSize,
+        dotValue: 2
+    }, `${i}_${j}`, false, {
+        fileName: "src/components/app/food/index.tsx",
+        lineNumber: 15,
+        columnNumber: 3
+    }, undefined));
+};
+_c = Food;
+var _c;
+$RefreshReg$(_c, "Food");
+
+  $parcel$ReactRefreshHelpers$b811.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../rectangle":"1ydI7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"1ydI7":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Rectangle", ()=>Rectangle
+);
+var _graphics = require("./graphics");
+var _sprite = require("./sprite");
+const Rectangle = {
+    Graphics: _graphics.Graphics,
+    Sprite: _sprite.Sprite
+};
+
+},{"./graphics":"3ZXBB","./sprite":"daHfH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ZXBB":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$222a = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$222a.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Graphics", ()=>Graphics
+);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+/* eslint-disable react/display-name */ var _react = require("react");
+var _reactPixi = require("@inlet/react-pixi");
+var _utils = require("@pixi/utils");
+var _s = $RefreshSig$();
+const blackColorCode = '#000000';
+const redColorCode = '#FF0000';
+const colorByCode = {
+    1: blackColorCode,
+    2: redColorCode
+};
+const Graphics = /*#__PURE__*/ _s(_react.memo(_c = _s(({ x , y , width , height , dotValue , onClick , onMouseOver , onPointerDown  })=>{
+    _s();
+    const draw = _react.useCallback((g)=>{
+        g.clear();
+        g.removeAllListeners();
+        g.interactive = true;
+        if (onMouseOver) g.on('mouseover', onMouseOver);
+        if (onPointerDown) g.on('pointerdown', onPointerDown);
+        if (onClick) g.on('click', onClick);
+        g.beginFill(_utils.string2hex(colorByCode[dotValue]));
+        g.drawRect(x, y, width, height);
+        g.endFill();
+    }, [
+        dotValue,
+        height,
+        onClick,
+        onMouseOver,
+        onPointerDown,
+        width,
+        x,
+        y
+    ]);
+    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Graphics, {
+        x: 0,
+        y: 0,
+        draw: draw
+    }, void 0, false, {
+        fileName: "src/components/app/rectangle/graphics/index.tsx",
+        lineNumber: 40,
+        columnNumber: 10
+    }, undefined));
+}, "gWIjAmoBoa4jew7wgyMbYqiX0vo=")), "gWIjAmoBoa4jew7wgyMbYqiX0vo=");
+_c1 = Graphics;
+var _c, _c1;
+$RefreshReg$(_c, "Graphics$memo");
+$RefreshReg$(_c1, "Graphics");
+
+  $parcel$ReactRefreshHelpers$222a.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"km3Ru":[function(require,module,exports) {
+"use strict";
+var Refresh = require('react-refresh/runtime');
+function debounce(func, delay) {
+    var args1;
+    var timeout = undefined;
+    return function(args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            timeout = undefined;
+            func.call(null, args);
+        }, delay);
+    };
+}
+var enqueueUpdate = debounce(function() {
+    Refresh.performReactRefresh();
+}, 30); // Everthing below is either adapted or copied from
+// https://github.com/facebook/metro/blob/61de16bd1edd7e738dd0311c89555a644023ab2d/packages/metro/src/lib/polyfills/require.js
+// MIT License - Copyright (c) Facebook, Inc. and its affiliates.
+module.exports.prelude = function(module) {
+    window.$RefreshReg$ = function(type, id) {
+        Refresh.register(type, module.id + ' ' + id);
+    };
+    window.$RefreshSig$ = Refresh.createSignatureFunctionForTransform;
+};
+module.exports.postlude = function(module) {
+    if (isReactRefreshBoundary(module.exports)) {
+        registerExportsForReactRefresh(module);
+        if (module.hot) {
+            module.hot.dispose(function(data) {
+                if (Refresh.hasUnrecoverableErrors()) window.location.reload();
+                data.prevExports = module.exports;
+            });
+            module.hot.accept(function(getParents) {
+                var prevExports = module.hot.data.prevExports;
+                var nextExports = module.exports; // Since we just executed the code for it, it's possible
+                // that the new exports make it ineligible for being a boundary.
+                var isNoLongerABoundary = !isReactRefreshBoundary(nextExports); // It can also become ineligible if its exports are incompatible
+                // with the previous exports.
+                // For example, if you add/remove/change exports, we'll want
+                // to re-execute the importing modules, and force those components
+                // to re-render. Similarly, if you convert a class component
+                // to a function, we want to invalidate the boundary.
+                var didInvalidate = shouldInvalidateReactRefreshBoundary(prevExports, nextExports);
+                if (isNoLongerABoundary || didInvalidate) {
+                    // We'll be conservative. The only case in which we won't do a full
+                    // reload is if all parent modules are also refresh boundaries.
+                    // In that case we'll add them to the current queue.
+                    var parents = getParents();
+                    if (parents.length === 0) {
+                        // Looks like we bubbled to the root. Can't recover from that.
+                        window.location.reload();
+                        return;
+                    }
+                    return parents;
+                }
+                enqueueUpdate();
+            });
+        }
+    }
+};
+function isReactRefreshBoundary(exports) {
+    if (Refresh.isLikelyComponentType(exports)) return true;
+    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
+    return false;
+    var hasExports = false;
+    var areAllExportsComponents = true;
+    let isESM = '__esModule' in exports;
+    for(var key in exports){
+        hasExports = true;
+        if (key === '__esModule') continue;
+        var desc = Object.getOwnPropertyDescriptor(exports, key);
+        if (desc && desc.get && !isESM) // Don't invoke getters for CJS as they may have side effects.
+        return false;
+        var exportValue = exports[key];
+        if (!Refresh.isLikelyComponentType(exportValue)) areAllExportsComponents = false;
+    }
+    return hasExports && areAllExportsComponents;
+}
+function shouldInvalidateReactRefreshBoundary(prevExports, nextExports) {
+    var prevSignature = getRefreshBoundarySignature(prevExports);
+    var nextSignature = getRefreshBoundarySignature(nextExports);
+    if (prevSignature.length !== nextSignature.length) return true;
+    for(var i = 0; i < nextSignature.length; i++){
+        if (prevSignature[i] !== nextSignature[i]) return true;
+    }
+    return false;
+} // When this signature changes, it's unsafe to stop at this refresh boundary.
+function getRefreshBoundarySignature(exports) {
+    var signature = [];
+    signature.push(Refresh.getFamilyByType(exports));
+    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
+    // (This is important for legacy environments.)
+    return signature;
+    let isESM = '__esModule' in exports;
+    for(var key in exports){
+        if (key === '__esModule') continue;
+        var desc = Object.getOwnPropertyDescriptor(exports, key);
+        if (desc && desc.get && !isESM) continue;
+        var exportValue = exports[key];
+        signature.push(key);
+        signature.push(Refresh.getFamilyByType(exportValue));
+    }
+    return signature;
+}
+function registerExportsForReactRefresh(module) {
+    var exports = module.exports, id = module.id;
+    Refresh.register(exports, id + ' %exports%');
+    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
+    // (This is important for legacy environments.)
+    return;
+    let isESM = '__esModule' in exports;
+    for(var key in exports){
+        var desc = Object.getOwnPropertyDescriptor(exports, key);
+        if (desc && desc.get && !isESM) continue;
+        var exportValue = exports[key];
+        Refresh.register(exportValue, id + ' %exports% ' + key);
+    }
+}
+
+},{"react-refresh/runtime":"786KC"}],"daHfH":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$5762 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$5762.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Sprite", ()=>Sprite
+);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+/* eslint-disable react/display-name */ var _react = require("react");
+var _reactPixi = require("@inlet/react-pixi");
+const bDotSpriteUrl = new URL(require("d04664b7335134a3"));
+const Sprite = /*#__PURE__*/ _react.memo(_c = ({ x , y , width  })=>/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Sprite, {
+        image: bDotSpriteUrl.href,
+        scale: {
+            x: width / 20,
+            y: width / 20
+        },
+        x: x,
+        y: y
+    }, void 0, false, {
+        fileName: "src/components/app/rectangle/sprite/index.tsx",
+        lineNumber: 10,
+        columnNumber: 2
+    }, undefined)
+);
+_c1 = Sprite;
+var _c, _c1;
+$RefreshReg$(_c, "Sprite$memo");
+$RefreshReg$(_c1, "Sprite");
+
+  $parcel$ReactRefreshHelpers$5762.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","d04664b7335134a3":"bbpWk","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bbpWk":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('6EXJA') + "black.1b2a1027.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {
+};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return '/';
+}
+function getBaseURL(url) {
+    return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
+    if (!matches) throw new Error('Origin not found');
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"abmCY":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$906b = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$906b.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Grid", ()=>Grid
+);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactPixi = require("@inlet/react-pixi");
+var _utils = require("@pixi/utils");
+var _s = $RefreshSig$();
+const Grid = ({ width , height , dotWidth  })=>{
+    _s();
+    const draw = _react.useCallback((g)=>{
+        g.clear();
+        g.lineStyle(1, _utils.string2hex('black'), 0.3);
+        g.moveTo(0, 0);
+        g.lineTo(width, 0);
+        for(let x = dotWidth; x < height; x += dotWidth){
+            g.moveTo(0, x);
+            g.lineTo(width, x);
+        }
+        for(let y = dotWidth; y < width; y += dotWidth){
+            g.moveTo(y, 0);
+            g.lineTo(y, height);
+        }
+    }, [
+        dotWidth,
+        height,
+        width
+    ]);
+    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Graphics, {
+        x: 0,
+        y: 0,
+        draw: draw
+    }, void 0, false, {
+        fileName: "src/components/app/grid/index.tsx",
+        lineNumber: 31,
+        columnNumber: 9
+    }, undefined));
+};
+_s(Grid, "gWIjAmoBoa4jew7wgyMbYqiX0vo=");
+_c = Grid;
+var _c;
+$RefreshReg$(_c, "Grid");
+
+  $parcel$ReactRefreshHelpers$906b.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4uXtV":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$dfb3 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$dfb3.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Snake", ()=>Snake
+);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _constants = require("../constants");
+var _rectangle = require("../rectangle");
+var _getNextTickSnake = require("../utils/get-next-tick-snake");
+var _s = $RefreshSig$();
+const Snake = ({ dotSize , playState , setPlayState , dots , food , onFoodEaten , onStateChange ,  })=>{
+    _s();
+    const [coordinates, setCoordinates] = _react.useState(_constants.DEFAULT_SNAKE_SELF);
+    const refCoordinates = _react.useRef(coordinates);
+    const [direction, setDirection] = _react.useState('up');
+    const [state1, setState] = _react.useState('alive');
+    const timerRef = _react.useRef();
+    _react.useEffect(()=>{
+        refCoordinates.current = coordinates;
+    }, [
+        coordinates
+    ]);
+    _react.useEffect(()=>{
+        onStateChange?.(state1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        state1
+    ]);
+    _react.useEffect(()=>{
+        if (playState === 'iddle') {
+            clearInterval(timerRef.current);
+            timerRef.current = undefined;
+            setDirection(_constants.DEFAULT_DIRECTION);
+            setCoordinates(_constants.DEFAULT_SNAKE_SELF);
+            setState('alive');
+            return;
+        }
+        if (playState === 'playing') {
+            clearInterval(timerRef.current);
+            const timerId = setInterval(handleTick, 100);
+            timerRef.current = timerId;
+            return;
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        playState,
+        direction
+    ]);
+    const handleTick = ()=>{
+        const { state , self: updatedSnake , foodEaten ,  } = _getNextTickSnake.getNextTickSnake(refCoordinates.current, direction, dots, food);
+        setCoordinates(updatedSnake);
+        setState(state);
+        if (foodEaten) onFoodEaten();
+    };
+    const handleChangeDirection = (e)=>{
+        if (playState === 'iddle') setPlayState('playing');
+        const code = e.code;
+        const newDirection = _constants.DIRECTION_BY_KEY[code];
+        const isOppositeDirection = direction === _constants.OPPOSITE_DIRECTION[newDirection];
+        const isSameDirection = direction === newDirection;
+        const nextDotTheOwnBody = _getNextTickSnake.getNextTickSnake(coordinates, direction, dots, food).self[0] === coordinates[1];
+        if (isSameDirection || isOppositeDirection) return;
+        if (nextDotTheOwnBody) return;
+        setDirection(newDirection);
+        handleTick();
+    };
+    const renderDot = ([i, j])=>/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_rectangle.Rectangle.Graphics, {
+            x: j * dotSize,
+            y: i * dotSize,
+            width: dotSize,
+            height: dotSize,
+            dotValue: 1
+        }, `${i}_${j}`, false, {
+            fileName: "src/components/app/snake/index.tsx",
+            lineNumber: 112,
+            columnNumber: 3
+        }, undefined)
+    ;
+    _react.useEffect(()=>{
+        window.addEventListener('keypress', handleChangeDirection);
+        return ()=>window.removeEventListener('keypress', handleChangeDirection)
+        ;
+    });
+    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactDefault.default.Fragment, {
+        children: coordinates.map(renderDot)
+    }, void 0, false, {
+        fileName: "src/components/app/snake/index.tsx",
+        lineNumber: 128,
+        columnNumber: 9
+    }, undefined));
+};
+_s(Snake, "NdC1vSKPrEt1pWdGWmSbFzgnM9Y=");
+_c = Snake;
+var _c;
+$RefreshReg$(_c, "Snake");
+
+  $parcel$ReactRefreshHelpers$dfb3.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../constants":"5aYOg","../rectangle":"1ydI7","../utils/get-next-tick-snake":"75gk7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"75gk7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getNextTickSnake", ()=>getNextTickSnake
 );
 var _matches = require("lodash/matches");
 var _matchesDefault = parcelHelpers.interopDefault(_matches);
-var _constants = require("../../constants");
-const getNextTickSnake = (snake, direction, dots)=>{
-    const [oldHead] = snake;
-    const iIncMap = {
-        up: -1,
-        down: 1,
-        right: 0,
-        left: 0
-    };
-    const jIncMap = {
-        up: 0,
-        down: 0,
-        right: 1,
-        left: -1
-    };
+const iIncMap = {
+    up: -1,
+    down: 1,
+    right: 0,
+    left: 0
+};
+const jIncMap = {
+    up: 0,
+    down: 0,
+    right: 1,
+    left: -1
+};
+const getNextTickSnake = (snake, direction, dots, food)=>{
+    const [oldHead, ...oldTail] = snake;
     const newHead = [
         oldHead[0] + iIncMap[direction],
         oldHead[1] + jIncMap[direction]
     ];
-    const outOfBorders = newHead[0] < 0 || newHead[1] < 0 || newHead[0] > dots.length - 1 || newHead[1] > dots.length - _constants.BORDER_VALUE;
+    const outOfBorders = newHead[0] < 0 || newHead[1] < 0 || newHead[0] > dots.length - 1 || newHead[1] > dots.length - 1;
     if (outOfBorders) return {
         state: 'dead',
         foodEaten: false,
         self: snake
     };
-    const isFood = dots[newHead[0]][newHead[1]] === _constants.FOOD_VALUE;
+    const isFood = _matchesDefault.default(newHead)(food);
     const currentTail = snake[snake.length - 1];
     const isCurrentTail = _matchesDefault.default(newHead)(currentTail);
-    const isObstacle = dots[newHead[0]][newHead[1]] === _constants.BORDER_VALUE;
+    const isObstacle = oldTail.some((tailItem)=>_matchesDefault.default(newHead)(tailItem)
+    );
     if (isObstacle && !isCurrentTail) return {
         state: 'dead',
         foodEaten: false,
@@ -80538,7 +81011,7 @@ const getNextTickSnake = (snake, direction, dots)=>{
     };
 };
 
-},{"lodash/matches":"5wSnE","../../constants":"5aYOg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5wSnE":[function(require,module,exports) {
+},{"lodash/matches":"5wSnE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5wSnE":[function(require,module,exports) {
 var baseClone = require('./_baseClone'), baseMatches = require('./_baseMatches');
 /** Used to compose bitmasks for cloning. */ var CLONE_DEEP_FLAG = 1;
 /**
@@ -83032,102 +83505,161 @@ module.exports = isStrictComparable;
 }
 module.exports = matchesStrictComparable;
 
-},{}],"5aYOg":[function(require,module,exports) {
+},{}],"aoWng":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$e28c = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$e28c.prelude(module);
+
+try {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "DEFAULT_DOT_SIZE", ()=>DEFAULT_DOT_SIZE
+parcelHelpers.export(exports, "Stats", ()=>Stats
 );
-parcelHelpers.export(exports, "DIRECTION_BY_KEY", ()=>DIRECTION_BY_KEY
-);
-parcelHelpers.export(exports, "OPPOSITE_DIRECTION", ()=>OPPOSITE_DIRECTION
-);
-parcelHelpers.export(exports, "DEFAULT_DIRECTION", ()=>DEFAULT_DIRECTION
-);
-parcelHelpers.export(exports, "CANVAS_WIDTH", ()=>CANVAS_WIDTH
-);
-parcelHelpers.export(exports, "CANVAS_HEIGHT", ()=>CANVAS_HEIGHT
-);
-parcelHelpers.export(exports, "midI", ()=>midI
-);
-parcelHelpers.export(exports, "midJ", ()=>midJ
-);
-parcelHelpers.export(exports, "DEFAULT_SNAKE_SELF", ()=>DEFAULT_SNAKE_SELF
-);
-parcelHelpers.export(exports, "DEFAULT_SNAKE", ()=>DEFAULT_SNAKE
-);
-parcelHelpers.export(exports, "EMPTY_VALUE", ()=>EMPTY_VALUE
-);
-parcelHelpers.export(exports, "BORDER_VALUE", ()=>BORDER_VALUE
-);
-parcelHelpers.export(exports, "FOOD_VALUE", ()=>FOOD_VALUE
-);
-const DEFAULT_DOT_SIZE = 20;
-const DIRECTION_BY_KEY = {
-    KeyA: 'left',
-    KeyD: 'right',
-    KeyS: 'down',
-    KeyW: 'up'
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _classnames = require("classnames");
+var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
+var _indexModuleCss = require("./index.module.css");
+var _indexModuleCssDefault = parcelHelpers.interopDefault(_indexModuleCss);
+var _s = $RefreshSig$();
+const Stats = ({ canvasWidth , canvasHeight , className , eatenFoodCount , playState ,  })=>{
+    _s();
+    const timerRef = _react.useRef(null);
+    const birthTimeRef = _react.useRef(null);
+    const [lifeSpan, setLifeSpan] = _react.useState(0);
+    const [scores, setScores] = _react.useState(0);
+    const handleTick = ()=>{
+        const newlifeSpan = birthTimeRef.current === null ? 0 : (Date.now() - birthTimeRef.current) / 1000;
+        setLifeSpan(newlifeSpan);
+    };
+    _react.useEffect(()=>{
+        const newScores = Math.pow(lifeSpan, 0.5) + eatenFoodCount * 10;
+        setScores(newScores);
+    }, [
+        eatenFoodCount,
+        lifeSpan
+    ]);
+    _react.useEffect(()=>{
+        if (playState === 'playing') {
+            birthTimeRef.current = Date.now();
+            setScores(0);
+            timerRef.current = setInterval(handleTick, 16);
+        }
+        if (playState === 'iddle') {
+            birthTimeRef.current = null;
+            if (timerRef.current) clearInterval(timerRef.current);
+        }
+    }, [
+        playState
+    ]);
+    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+        className: _classnamesDefault.default(_indexModuleCssDefault.default.stats, className),
+        children: [
+            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                children: [
+                    canvasWidth,
+                    "px X ",
+                    canvasHeight,
+                    "px"
+                ]
+            }, void 0, true, {
+                fileName: "src/components/app/stats/index.tsx",
+                lineNumber: 56,
+                columnNumber: 4
+            }, undefined),
+            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                children: [
+                    "Scores: ",
+                    scores.toFixed(2)
+                ]
+            }, void 0, true, {
+                fileName: "src/components/app/stats/index.tsx",
+                lineNumber: 59,
+                columnNumber: 4
+            }, undefined),
+            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                children: [
+                    "Life time: ",
+                    lifeSpan.toFixed(2)
+                ]
+            }, void 0, true, {
+                fileName: "src/components/app/stats/index.tsx",
+                lineNumber: 60,
+                columnNumber: 4
+            }, undefined),
+            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                children: [
+                    "Eaten food: ",
+                    eatenFoodCount
+                ]
+            }, void 0, true, {
+                fileName: "src/components/app/stats/index.tsx",
+                lineNumber: 61,
+                columnNumber: 4
+            }, undefined)
+        ]
+    }, void 0, true, {
+        fileName: "src/components/app/stats/index.tsx",
+        lineNumber: 55,
+        columnNumber: 3
+    }, undefined));
 };
-const OPPOSITE_DIRECTION = {
-    up: 'down',
-    down: 'up',
-    left: 'right',
-    right: 'left'
-};
-const DEFAULT_DIRECTION = 'up';
-const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
-const CANVAS_HEIGHT = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
-const midI = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2) - 1;
-const midJ = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2) - 1;
-const DEFAULT_SNAKE_SELF = [
-    [
-        midI,
-        midJ
-    ],
-    [
-        midI + 1,
-        midJ
-    ],
-    [
-        midI + 2,
-        midJ
-    ],
-    [
-        midI + 3,
-        midJ
-    ], 
-];
-const DEFAULT_SNAKE = {
-    state: 'alive',
-    foodEaten: false,
-    self: DEFAULT_SNAKE_SELF
-};
-const EMPTY_VALUE = 0;
-const BORDER_VALUE = 1;
-const FOOD_VALUE = 2;
+_s(Stats, "vr7M2LFTtpRpE8aXdy+iuJxoYmw=");
+_c = Stats;
+var _c;
+$RefreshReg$(_c, "Stats");
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dgSET":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getRandomEmptyDotPoint", ()=>getRandomEmptyDotPoint
-);
-var _getRandomInt = require("../../../../utils/get-random-int");
-var _constants = require("../../constants");
-const getRandomEmptyDotPoint = (dots)=>{
-    const coordsForRandom = dots.map((array, i)=>array.map((value, j)=>{
-            if (value === _constants.EMPTY_VALUE) return [
-                i,
-                j
-            ];
-            return undefined;
-        })
-    ).flat(1).filter((v)=>v
-    );
-    const point = coordsForRandom[_getRandomInt.getRandomInt(coordsForRandom.length)];
-    return point;
-};
+  $parcel$ReactRefreshHelpers$e28c.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","./index.module.css":"3Q0UP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"jocGM":[function(require,module,exports) {
+(function() {
+    var hasOwn = {
+    }.hasOwnProperty;
+    function classNames() {
+        var classes = [];
+        for(var i = 0; i < arguments.length; i++){
+            var arg = arguments[i];
+            if (!arg) continue;
+            var argType = typeof arg;
+            if (argType === 'string' || argType === 'number') classes.push(arg);
+            else if (Array.isArray(arg)) {
+                if (arg.length) {
+                    var inner = classNames.apply(null, arg);
+                    if (inner) classes.push(inner);
+                }
+            } else if (argType === 'object') {
+                if (arg.toString === Object.prototype.toString) {
+                    for(var key in arg)if (hasOwn.call(arg, key) && arg[key]) classes.push(key);
+                } else classes.push(arg.toString());
+            }
+        }
+        return classes.join(' ');
+    }
+    if (typeof module !== 'undefined' && module.exports) {
+        classNames.default = classNames;
+        module.exports = classNames;
+    } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) // register as 'classnames', consistent with npm package name
+    define('classnames', [], function() {
+        return classNames;
+    });
+    else window.classNames = classNames;
+})();
 
-},{"../../../../utils/get-random-int":"01k28","../../constants":"5aYOg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1Xn61":[function(require,module,exports) {
+},{}],"3Q0UP":[function(require,module,exports) {
+module.exports["stats"] = "stats_87590a";
+
+},{}],"erp6L":[function(require,module,exports) {
+module.exports["app"] = "app_93070a";
+module.exports["canvas"] = "canvas_93070a";
+module.exports["controls"] = "controls_93070a";
+module.exports["dropdownButton"] = "dropdownButton_93070a";
+module.exports["stats"] = "stats_93070a";
+
+},{}],"1Xn61":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$03a5 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -83193,467 +83725,7 @@ $RefreshReg$(_c1, "ClickableAria");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"km3Ru":[function(require,module,exports) {
-"use strict";
-var Refresh = require('react-refresh/runtime');
-function debounce(func, delay) {
-    var args1;
-    var timeout = undefined;
-    return function(args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(function() {
-            timeout = undefined;
-            func.call(null, args);
-        }, delay);
-    };
-}
-var enqueueUpdate = debounce(function() {
-    Refresh.performReactRefresh();
-}, 30); // Everthing below is either adapted or copied from
-// https://github.com/facebook/metro/blob/61de16bd1edd7e738dd0311c89555a644023ab2d/packages/metro/src/lib/polyfills/require.js
-// MIT License - Copyright (c) Facebook, Inc. and its affiliates.
-module.exports.prelude = function(module) {
-    window.$RefreshReg$ = function(type, id) {
-        Refresh.register(type, module.id + ' ' + id);
-    };
-    window.$RefreshSig$ = Refresh.createSignatureFunctionForTransform;
-};
-module.exports.postlude = function(module) {
-    if (isReactRefreshBoundary(module.exports)) {
-        registerExportsForReactRefresh(module);
-        if (module.hot) {
-            module.hot.dispose(function(data) {
-                if (Refresh.hasUnrecoverableErrors()) window.location.reload();
-                data.prevExports = module.exports;
-            });
-            module.hot.accept(function(getParents) {
-                var prevExports = module.hot.data.prevExports;
-                var nextExports = module.exports; // Since we just executed the code for it, it's possible
-                // that the new exports make it ineligible for being a boundary.
-                var isNoLongerABoundary = !isReactRefreshBoundary(nextExports); // It can also become ineligible if its exports are incompatible
-                // with the previous exports.
-                // For example, if you add/remove/change exports, we'll want
-                // to re-execute the importing modules, and force those components
-                // to re-render. Similarly, if you convert a class component
-                // to a function, we want to invalidate the boundary.
-                var didInvalidate = shouldInvalidateReactRefreshBoundary(prevExports, nextExports);
-                if (isNoLongerABoundary || didInvalidate) {
-                    // We'll be conservative. The only case in which we won't do a full
-                    // reload is if all parent modules are also refresh boundaries.
-                    // In that case we'll add them to the current queue.
-                    var parents = getParents();
-                    if (parents.length === 0) {
-                        // Looks like we bubbled to the root. Can't recover from that.
-                        window.location.reload();
-                        return;
-                    }
-                    return parents;
-                }
-                enqueueUpdate();
-            });
-        }
-    }
-};
-function isReactRefreshBoundary(exports) {
-    if (Refresh.isLikelyComponentType(exports)) return true;
-    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
-    return false;
-    var hasExports = false;
-    var areAllExportsComponents = true;
-    let isESM = '__esModule' in exports;
-    for(var key in exports){
-        hasExports = true;
-        if (key === '__esModule') continue;
-        var desc = Object.getOwnPropertyDescriptor(exports, key);
-        if (desc && desc.get && !isESM) // Don't invoke getters for CJS as they may have side effects.
-        return false;
-        var exportValue = exports[key];
-        if (!Refresh.isLikelyComponentType(exportValue)) areAllExportsComponents = false;
-    }
-    return hasExports && areAllExportsComponents;
-}
-function shouldInvalidateReactRefreshBoundary(prevExports, nextExports) {
-    var prevSignature = getRefreshBoundarySignature(prevExports);
-    var nextSignature = getRefreshBoundarySignature(nextExports);
-    if (prevSignature.length !== nextSignature.length) return true;
-    for(var i = 0; i < nextSignature.length; i++){
-        if (prevSignature[i] !== nextSignature[i]) return true;
-    }
-    return false;
-} // When this signature changes, it's unsafe to stop at this refresh boundary.
-function getRefreshBoundarySignature(exports) {
-    var signature = [];
-    signature.push(Refresh.getFamilyByType(exports));
-    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
-    // (This is important for legacy environments.)
-    return signature;
-    let isESM = '__esModule' in exports;
-    for(var key in exports){
-        if (key === '__esModule') continue;
-        var desc = Object.getOwnPropertyDescriptor(exports, key);
-        if (desc && desc.get && !isESM) continue;
-        var exportValue = exports[key];
-        signature.push(key);
-        signature.push(Refresh.getFamilyByType(exportValue));
-    }
-    return signature;
-}
-function registerExportsForReactRefresh(module) {
-    var exports = module.exports, id = module.id;
-    Refresh.register(exports, id + ' %exports%');
-    if (exports == null || typeof exports !== 'object') // Exit if we can't iterate over exports.
-    // (This is important for legacy environments.)
-    return;
-    let isESM = '__esModule' in exports;
-    for(var key in exports){
-        var desc = Object.getOwnPropertyDescriptor(exports, key);
-        if (desc && desc.get && !isESM) continue;
-        var exportValue = exports[key];
-        Refresh.register(exportValue, id + ' %exports% ' + key);
-    }
-}
-
-},{"react-refresh/runtime":"786KC"}],"abmCY":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$906b = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$906b.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Grid", ()=>Grid
-);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactPixi = require("@inlet/react-pixi");
-var _utils = require("@pixi/utils");
-var _s = $RefreshSig$();
-const Grid = ({ width , height , dotWidth  })=>{
-    _s();
-    const draw = _react.useCallback((g)=>{
-        g.clear();
-        g.lineStyle(1, _utils.string2hex('black'), 0.3);
-        g.moveTo(0, 0);
-        g.lineTo(width, 0);
-        for(let x = dotWidth; x < height; x += dotWidth){
-            g.moveTo(0, x);
-            g.lineTo(width, x);
-        }
-        for(let y = dotWidth; y < width; y += dotWidth){
-            g.moveTo(y, 0);
-            g.lineTo(y, height);
-        }
-    }, [
-        dotWidth,
-        height,
-        width
-    ]);
-    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Graphics, {
-        x: 0,
-        y: 0,
-        draw: draw
-    }, void 0, false, {
-        fileName: "src/components/app/grid/index.tsx",
-        lineNumber: 31,
-        columnNumber: 9
-    }, undefined));
-};
-_s(Grid, "gWIjAmoBoa4jew7wgyMbYqiX0vo=");
-_c = Grid;
-var _c;
-$RefreshReg$(_c, "Grid");
-
-  $parcel$ReactRefreshHelpers$906b.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"1ydI7":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Rectangle", ()=>Rectangle
-);
-var _graphics = require("./graphics");
-var _sprite = require("./sprite");
-const Rectangle = {
-    Graphics: _graphics.Graphics,
-    Sprite: _sprite.Sprite
-};
-
-},{"./graphics":"3ZXBB","./sprite":"daHfH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ZXBB":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$222a = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$222a.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Graphics", ()=>Graphics
-);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-/* eslint-disable react/display-name */ var _react = require("react");
-var _reactPixi = require("@inlet/react-pixi");
-var _utils = require("@pixi/utils");
-var _s = $RefreshSig$();
-const blackColorCode = '#000000';
-const redColorCode = '#FF0000';
-const colorByCode = {
-    1: blackColorCode,
-    2: redColorCode
-};
-const Graphics = /*#__PURE__*/ _s(_react.memo(_c = _s(({ x , y , width , height , dotValue , onClick , onMouseOver , onPointerDown  })=>{
-    _s();
-    const draw = _react.useCallback((g)=>{
-        g.clear();
-        g.removeAllListeners();
-        g.interactive = true;
-        if (onMouseOver) g.on('mouseover', onMouseOver);
-        if (onPointerDown) g.on('pointerdown', onPointerDown);
-        if (onClick) g.on('click', onClick);
-        g.beginFill(_utils.string2hex(colorByCode[dotValue]));
-        g.drawRect(x, y, width, height);
-        g.endFill();
-    }, [
-        dotValue,
-        height,
-        onClick,
-        onMouseOver,
-        onPointerDown,
-        width,
-        x,
-        y
-    ]);
-    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Graphics, {
-        x: 0,
-        y: 0,
-        draw: draw
-    }, void 0, false, {
-        fileName: "src/components/app/rectangle/graphics/index.tsx",
-        lineNumber: 40,
-        columnNumber: 10
-    }, undefined));
-}, "gWIjAmoBoa4jew7wgyMbYqiX0vo=")), "gWIjAmoBoa4jew7wgyMbYqiX0vo=");
-_c1 = Graphics;
-var _c, _c1;
-$RefreshReg$(_c, "Graphics$memo");
-$RefreshReg$(_c1, "Graphics");
-
-  $parcel$ReactRefreshHelpers$222a.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"daHfH":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$5762 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$5762.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Sprite", ()=>Sprite
-);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-/* eslint-disable react/display-name */ var _react = require("react");
-var _reactPixi = require("@inlet/react-pixi");
-const bDotSpriteUrl = new URL(require("d04664b7335134a3"));
-const Sprite = /*#__PURE__*/ _react.memo(_c = ({ x , y , width  })=>/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactPixi.Sprite, {
-        image: bDotSpriteUrl.href,
-        scale: {
-            x: width / 20,
-            y: width / 20
-        },
-        x: x,
-        y: y
-    }, void 0, false, {
-        fileName: "src/components/app/rectangle/sprite/index.tsx",
-        lineNumber: 10,
-        columnNumber: 2
-    }, undefined)
-);
-_c1 = Sprite;
-var _c, _c1;
-$RefreshReg$(_c, "Sprite$memo");
-$RefreshReg$(_c1, "Sprite");
-
-  $parcel$ReactRefreshHelpers$5762.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","d04664b7335134a3":"bbpWk","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bbpWk":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('6EXJA') + "black.1b2a1027.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {
-};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return '/';
-}
-function getBaseURL(url) {
-    return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
-    if (!matches) throw new Error('Origin not found');
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"aoWng":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$e28c = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$e28c.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Stats", ()=>Stats
-);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _classnames = require("classnames");
-var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
-var _indexModuleCss = require("./index.module.css");
-var _indexModuleCssDefault = parcelHelpers.interopDefault(_indexModuleCss);
-const Stats = ({ canvasWidth , canvasHeight , scores , className , lifeTime , eatenFoodCount , remainingTime ,  })=>/*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-        className: _classnamesDefault.default(_indexModuleCssDefault.default.stats, className),
-        children: [
-            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                children: [
-                    canvasWidth,
-                    "px X ",
-                    canvasHeight,
-                    "px"
-                ]
-            }, void 0, true, {
-                fileName: "src/components/app/stats/index.tsx",
-                lineNumber: 26,
-                columnNumber: 3
-            }, undefined),
-            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                children: [
-                    "Scores: ",
-                    scores
-                ]
-            }, void 0, true, {
-                fileName: "src/components/app/stats/index.tsx",
-                lineNumber: 29,
-                columnNumber: 3
-            }, undefined),
-            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                children: [
-                    "Life time: ",
-                    lifeTime
-                ]
-            }, void 0, true, {
-                fileName: "src/components/app/stats/index.tsx",
-                lineNumber: 30,
-                columnNumber: 3
-            }, undefined),
-            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                children: [
-                    "Remaining time: ",
-                    remainingTime
-                ]
-            }, void 0, true, {
-                fileName: "src/components/app/stats/index.tsx",
-                lineNumber: 31,
-                columnNumber: 3
-            }, undefined),
-            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                children: [
-                    "Eaten food: ",
-                    eatenFoodCount
-                ]
-            }, void 0, true, {
-                fileName: "src/components/app/stats/index.tsx",
-                lineNumber: 32,
-                columnNumber: 3
-            }, undefined)
-        ]
-    }, void 0, true, {
-        fileName: "src/components/app/stats/index.tsx",
-        lineNumber: 25,
-        columnNumber: 2
-    }, undefined)
-;
-_c = Stats;
-var _c;
-$RefreshReg$(_c, "Stats");
-
-  $parcel$ReactRefreshHelpers$e28c.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","classnames":"jocGM","./index.module.css":"3Q0UP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"jocGM":[function(require,module,exports) {
-(function() {
-    var hasOwn = {
-    }.hasOwnProperty;
-    function classNames() {
-        var classes = [];
-        for(var i = 0; i < arguments.length; i++){
-            var arg = arguments[i];
-            if (!arg) continue;
-            var argType = typeof arg;
-            if (argType === 'string' || argType === 'number') classes.push(arg);
-            else if (Array.isArray(arg)) {
-                if (arg.length) {
-                    var inner = classNames.apply(null, arg);
-                    if (inner) classes.push(inner);
-                }
-            } else if (argType === 'object') {
-                if (arg.toString === Object.prototype.toString) {
-                    for(var key in arg)if (hasOwn.call(arg, key) && arg[key]) classes.push(key);
-                } else classes.push(arg.toString());
-            }
-        }
-        return classes.join(' ');
-    }
-    if (typeof module !== 'undefined' && module.exports) {
-        classNames.default = classNames;
-        module.exports = classNames;
-    } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) // register as 'classnames', consistent with npm package name
-    define('classnames', [], function() {
-        return classNames;
-    });
-    else window.classNames = classNames;
-})();
-
-},{}],"3Q0UP":[function(require,module,exports) {
-module.exports["stats"] = "stats_87590a";
-
-},{}],"erp6L":[function(require,module,exports) {
-module.exports["app"] = "app_93070a";
-module.exports["canvas"] = "canvas_93070a";
-module.exports["controls"] = "controls_93070a";
-module.exports["dropdownButton"] = "dropdownButton_93070a";
-module.exports["stats"] = "stats_93070a";
-
-},{}],"18j5i":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@inlet/react-pixi":"1HLK0","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"18j5i":[function(require,module,exports) {
 
 },{}]},["kn9T2","6Oejs","4aBH6"], "4aBH6", "parcelRequire5b77")
 
