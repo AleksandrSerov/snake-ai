@@ -1,4 +1,5 @@
-import { Snake } from '.';
+import { Point } from './food';
+import { SnakeProps } from './snake';
 
 export const DEFAULT_DOT_SIZE = 20;
 export const DIRECTION_BY_KEY = {
@@ -25,7 +26,7 @@ export const DEFAULT_SNAKE_SELF = [
 	[midI + 1, midJ],
 	[midI + 2, midJ],
 	[midI + 3, midJ],
-] as Snake;
+] as Array<Point>;
 
 export const DEFAULT_SNAKE = {
 	state: 'alive' as const,
