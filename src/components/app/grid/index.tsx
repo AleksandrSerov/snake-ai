@@ -14,8 +14,7 @@ export const Grid: FC<Props> = ({ width, height, dotWidth }) => {
 		(g: PIXI.Graphics) => {
 			g.clear();
 			g.lineStyle(1, string2hex('black'), 0.3);
-			g.moveTo(0, 0);
-			g.lineTo(width, 0);
+			g.drawRect(1, 0, width - 1, height - 1);
 			for (let x = dotWidth; x < height; x += dotWidth) {
 				g.moveTo(0, x);
 				g.lineTo(width, x);

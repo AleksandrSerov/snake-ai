@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import matches from 'lodash/matches';
 
 import {
 	DEFAULT_DIRECTION,
@@ -33,9 +34,19 @@ export const Snake: React.FC<SnakeProps> = ({
 }) => {
 	const [coordinates, setCoordinates] = useState<Coordinates>(DEFAULT_SNAKE_SELF);
 	const refCoordinates = useRef<Coordinates>(coordinates);
+	const startRef = useRef<number>();
+	const foodRef = useRef(food);
 	const [direction, setDirection] = useState<Direction>('up');
+	const directionRef = useRef<Direction>(direction);
 	const [state, setState] = useState<'alive' | 'dead'>('alive');
 	const timerRef = useRef<ReturnType<typeof setInterval>>();
+
+	useEffect(() => {
+		foodRef.current = food;
+	}, [food]);
+	useEffect(() => {
+		directionRef.current = direction;
+	}, [direction]);
 
 	useEffect(() => {
 		refCoordinates.current = coordinates;
@@ -60,28 +71,39 @@ export const Snake: React.FC<SnakeProps> = ({
 
 		if (playState === 'playing') {
 			clearInterval(timerRef.current);
-
-			const timerId = setInterval(handleTick, 100);
-
-			timerRef.current = timerId;
+			window.requestAnimationFrame(handleTick);
 
 			return;
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [playState, direction]);
 
-	const handleTick = () => {
+	const handleTick = (timestamp: number) => {
+		if (!startRef.current) {
+			startRef.current = timestamp;
+		}
+		const elapsed = timestamp - startRef.current;
+
+		if (elapsed <= 100) {
+			window.requestAnimationFrame(handleTick);
+
+			return;
+		}
+		startRef.current = timestamp;
+
 		const {
 			state,
 			self: updatedSnake,
 			foodEaten,
-		} = getNextTickSnake(refCoordinates.current, direction, dots, food);
+		} = getNextTickSnake(refCoordinates.current, directionRef.current, dots, foodRef.current);
 
 		setCoordinates(updatedSnake);
 		setState(state);
 		if (foodEaten) {
 			onFoodEaten(updatedSnake);
 		}
+
+		window.requestAnimationFrame(handleTick);
 	};
 
 	const handleChangeDirection = (e: KeyboardEvent) => {
@@ -95,17 +117,24 @@ export const Snake: React.FC<SnakeProps> = ({
 		const isOppositeDirection = direction === OPPOSITE_DIRECTION[newDirection];
 		const isSameDirection = direction === newDirection;
 
-		const nextDotTheOwnBody =
-			getNextTickSnake(coordinates, direction, dots, food).self[0] === coordinates[1];
-
 		if (isSameDirection || isOppositeDirection) {
 			return;
 		}
-		if (nextDotTheOwnBody) {
-			return;
-		}
 		setDirection(newDirection);
-		handleTick();
+
+		const {
+			state,
+			self: updatedSnake,
+			foodEaten,
+		} = getNextTickSnake(coordinates, newDirection, dots, food);
+
+		setCoordinates(updatedSnake);
+		setState(state);
+		if (foodEaten) {
+			onFoodEaten(updatedSnake);
+		}
+
+		window.requestAnimationFrame(handleTick);
 	};
 
 	const renderDot = ([i, j]: [number, number]) => (

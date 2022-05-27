@@ -8,7 +8,8 @@
 .canvas {
 	display: grid;
 	padding: 24px;
-	background-color: rgb(32, 178, 170, 0.8);
+	background-color: rgb(32, 178, 170, 1);
+	border: 1px solid black;
 }
 
 .controls {
@@ -16,7 +17,7 @@
 	top: 60px;
 	left: 20px;
 	min-width: 100px;
-	background-color: rgb(32, 178, 170, 0.8);
+	background-color: rgb(32, 178, 170, 1);
 	display: grid;
 	grid-gap: 24px;
 }
@@ -28,7 +29,7 @@
 }
 
 .stats {
-	background-color: rgb(32, 178, 170, 0.8);
+	background-color: rgb(32, 178, 170, 1);
 }
 
 @media (max-width: 991px) {

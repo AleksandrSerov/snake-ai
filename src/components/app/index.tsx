@@ -4,12 +4,12 @@ import { string2hex } from '@pixi/utils';
 
 import { generateDots } from './utils/generate-dots';
 import { getRandomEmptyDotPoint } from './utils/get-random-empty-dot-point';
-import { ClickableAria } from './clickable-aria';
 import {
 	BORDER_VALUE,
 	CANVAS_HEIGHT,
 	CANVAS_WIDTH,
 	DEFAULT_DOT_SIZE,
+	DEFAULT_SNAKE_SELF,
 	EMPTY_VALUE,
 	FOOD_VALUE,
 } from './constants';
@@ -37,7 +37,9 @@ const DEFAULT_DOTS = (() => {
 export const App: FC = () => {
 	const [eatenFoodCount, setEatenFoodCount] = useState(0);
 	const [playState, setPlayState] = useState<'iddle' | 'playing'>('iddle');
-	const [food, setFood] = useState<Point>(getRandomEmptyDotPoint(DEFAULT_DOTS, [[0, 0]]));
+	const [food, setFood] = useState<Point>(
+		getRandomEmptyDotPoint(DEFAULT_DOTS, DEFAULT_SNAKE_SELF),
+	);
 
 	const handleFoodEaten: SnakeProps['onFoodEaten'] = (snake) => {
 		setEatenFoodCount((prevCount) => prevCount + 1);
@@ -73,11 +75,10 @@ export const App: FC = () => {
 					width={ CANVAS_WIDTH }
 					height={ CANVAS_HEIGHT }
 					options={ {
-						backgroundColor: string2hex('#ffffff'),
+						backgroundColor: string2hex('#20b2aa'),
 						powerPreference: 'high-performance',
 					} }
 				>
-					<ClickableAria width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } />
 					<Snake
 						dotSize={ DEFAULT_DOT_SIZE }
 						playState={ playState }

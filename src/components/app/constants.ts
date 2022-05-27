@@ -17,10 +17,9 @@ export const OPPOSITE_DIRECTION = {
 export const DEFAULT_DIRECTION = 'up';
 
 export const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
-export const CANVAS_HEIGHT = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
-export const midI = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2) - 1;
-export const midJ = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2) - 1;
-
+export const CANVAS_HEIGHT = CANVAS_WIDTH;
+export const midI = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2);
+export const midJ = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2);
 export const DEFAULT_SNAKE_SELF = [
 	[midI, midJ],
 	[midI + 1, midJ],
