@@ -23,6 +23,10 @@ export type SnakeProps = {
 	onFoodEaten: (snake: Coordinates) => void;
 	onStateChange?: (state: 'alive' | 'dead') => void;
 };
+
+const isControlKey = (key: string): key is keyof typeof DIRECTION_BY_KEY =>
+	Object.keys(DIRECTION_BY_KEY).includes(key);
+
 export const Snake: React.FC<SnakeProps> = ({
 	dotSize,
 	playState,
@@ -39,7 +43,11 @@ export const Snake: React.FC<SnakeProps> = ({
 	const [direction, setDirection] = useState<Direction>('up');
 	const directionRef = useRef<Direction>(direction);
 	const [state, setState] = useState<'alive' | 'dead'>('alive');
-	const timerRef = useRef<ReturnType<typeof setInterval>>();
+	const playStateRef = useRef(playState);
+
+	useEffect(() => {
+		playStateRef.current = playState;
+	}, [playState]);
 
 	useEffect(() => {
 		foodRef.current = food;
@@ -60,8 +68,6 @@ export const Snake: React.FC<SnakeProps> = ({
 
 	useEffect(() => {
 		if (playState === 'iddle') {
-			clearInterval(timerRef.current);
-			timerRef.current = undefined;
 			setDirection(DEFAULT_DIRECTION);
 			setCoordinates(DEFAULT_SNAKE_SELF);
 			setState('alive');
@@ -70,15 +76,17 @@ export const Snake: React.FC<SnakeProps> = ({
 		}
 
 		if (playState === 'playing') {
-			clearInterval(timerRef.current);
 			window.requestAnimationFrame(handleTick);
 
 			return;
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [playState, direction]);
+	}, [playState]);
 
 	const handleTick = (timestamp: number) => {
+		if (playStateRef.current !== 'playing') {
+			return;
+		}
 		if (!startRef.current) {
 			startRef.current = timestamp;
 		}
@@ -107,10 +115,15 @@ export const Snake: React.FC<SnakeProps> = ({
 	};
 
 	const handleChangeDirection = (e: KeyboardEvent) => {
+		if (!isControlKey(e.code)) {
+			return;
+		}
+
 		if (playState === 'iddle') {
 			setPlayState('playing');
 		}
-		const code = e.code as 'KeyA' | 'KeyD' | 'KeyW' | 'KeyS';
+
+		const code = e.code;
 
 		const newDirection = DIRECTION_BY_KEY[code];
 
@@ -121,7 +134,7 @@ export const Snake: React.FC<SnakeProps> = ({
 			return;
 		}
 		setDirection(newDirection);
-
+		startRef.current = performance.now();
 		const {
 			state,
 			self: updatedSnake,
@@ -149,9 +162,9 @@ export const Snake: React.FC<SnakeProps> = ({
 	);
 
 	useEffect(() => {
-		window.addEventListener('keypress', handleChangeDirection);
+		window.document.addEventListener('keydown', handleChangeDirection);
 
-		return () => window.removeEventListener('keypress', handleChangeDirection);
+		return () => window.document.removeEventListener('keydown', handleChangeDirection);
 	});
 
 	return <React.Fragment>{coordinates.map(renderDot)}</React.Fragment>;

@@ -1,5 +1,4 @@
 import { Point } from './food';
-import { SnakeProps } from './snake';
 
 export const DEFAULT_DOT_SIZE = 20;
 export const DIRECTION_BY_KEY = {
@@ -7,6 +6,10 @@ export const DIRECTION_BY_KEY = {
 	KeyD: 'right',
 	KeyS: 'down',
 	KeyW: 'up',
+	ArrowLeft: 'left',
+	ArrowRight: 'right',
+	ArrowDown: 'down',
+	ArrowUp: 'up',
 } as const;
 export const OPPOSITE_DIRECTION = {
 	up: 'down',
