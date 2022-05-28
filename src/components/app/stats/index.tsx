@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, VFC } from 'react';
+import ReactDOM from 'react-dom';
 import cn from 'classnames';
 
 import styles from './index.module.css';
@@ -10,6 +11,7 @@ type Props = {
 	className?: string;
 	eatenFoodCount: number;
 };
+const root = document.getElementById('app');
 
 export const Stats: VFC<Props> = ({
 	canvasWidth,
@@ -51,14 +53,5 @@ export const Stats: VFC<Props> = ({
 		}
 	}, [playState]);
 
-	return (
-		<div className={ cn(styles.stats, className) }>
-			<div>
-				{canvasWidth}px X {canvasHeight}px
-			</div>
-			<div>Scores: {scores.toFixed(2)}</div>
-			<div>Life time: {lifeSpan.toFixed(2)}</div>
-			<div>Eaten food: {eatenFoodCount}</div>
-		</div>
-	);
+	return null;
 };

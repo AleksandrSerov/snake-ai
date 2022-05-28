@@ -8,6 +8,7 @@ import {
 	DIRECTION_BY_KEY,
 	DIRECTIONS,
 	OPPOSITE_DIRECTION,
+	TICK_MS,
 } from '../constants';
 import { Rectangle } from '../rectangle';
 import { getNextTickSnake } from '../utils/get-next-tick-snake';
@@ -100,7 +101,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		}
 		const elapsed = timestamp - startRef.current;
 
-		if (elapsed <= 10) {
+		if (elapsed <= TICK_MS) {
 			window.requestAnimationFrame(handleTick);
 
 			return;

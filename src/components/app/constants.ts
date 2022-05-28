@@ -1,6 +1,7 @@
 import { Point } from './food';
 
 export const DEFAULT_DOT_SIZE = 20;
+export const TICK_MS = 50;
 export const DIRECTIONS = {
 	up: 'up',
 	down: 'down',

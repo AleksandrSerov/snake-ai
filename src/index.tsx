@@ -1,9 +1,11 @@
+import React from 'react';
 import ReactDOM from 'react-dom';
 import Stats from 'stats.js';
 
 import { App } from './app';
 
-import './index.module.css';
+import './global.module.css';
+import styles from './index.module.css';
 
 const initStats = () => {
 	const stats = new Stats();

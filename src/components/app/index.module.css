@@ -1,5 +1,7 @@
 .app {
-	position: relative;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	display: grid;
 	grid-template-columns: min-content min-content;
 	justify-content: center;
@@ -7,34 +9,11 @@
 
 .canvas {
 	display: grid;
-	padding: 24px;
-	background-color: rgb(32, 178, 170, 1);
 	border: 1px solid black;
-}
-
-.controls {
-	padding: 24px 18px;
-	top: 60px;
-	left: 20px;
-	min-width: 100px;
-	background-color: rgb(32, 178, 170, 1);
-	display: grid;
-	grid-gap: 24px;
 }
 
 .dropdownButton {
 	cursor: pointer;
 	text-transform: uppercase;
 	text-align: right;
-}
-
-.stats {
-	background-color: rgb(32, 178, 170, 1);
-}
-
-@media (max-width: 991px) {
-	.controls {
-		overflow: scroll;
-		max-height: 300px;
-	}
 }
