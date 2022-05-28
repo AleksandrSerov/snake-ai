@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import matches from 'lodash/matches';
 
+import { getRandomInt } from '../../../utils/get-random-int';
 import {
 	DEFAULT_DIRECTION,
 	DEFAULT_SNAKE_SELF,
 	DIRECTION_BY_KEY,
+	DIRECTIONS,
 	OPPOSITE_DIRECTION,
 } from '../constants';
 import { Rectangle } from '../rectangle';
@@ -26,6 +28,12 @@ export type SnakeProps = {
 
 const isControlKey = (key: string): key is keyof typeof DIRECTION_BY_KEY =>
 	Object.keys(DIRECTION_BY_KEY).includes(key);
+const chooseDirection = () => {
+	const directions = Object.keys(DIRECTION_BY_KEY);
+	const randomIndex = getRandomInt(directions.length);
+
+	return directions[randomIndex];
+};
 
 export const Snake: React.FC<SnakeProps> = ({
 	dotSize,
@@ -92,13 +100,20 @@ export const Snake: React.FC<SnakeProps> = ({
 		}
 		const elapsed = timestamp - startRef.current;
 
-		if (elapsed <= 100) {
+		if (elapsed <= 10) {
 			window.requestAnimationFrame(handleTick);
 
 			return;
 		}
 		startRef.current = timestamp;
+		const dir = chooseDirection();
 
+		handleChooseDirection({ code: dir } as KeyboardEvent);
+
+		window.requestAnimationFrame(handleTick);
+	};
+
+	const handleMove = () => {
 		const {
 			state,
 			self: updatedSnake,
@@ -110,11 +125,9 @@ export const Snake: React.FC<SnakeProps> = ({
 		if (foodEaten) {
 			onFoodEaten(updatedSnake);
 		}
-
-		window.requestAnimationFrame(handleTick);
 	};
 
-	const handleChangeDirection = (e: KeyboardEvent) => {
+	const handleChooseDirection = (e: KeyboardEvent) => {
 		if (!isControlKey(e.code)) {
 			return;
 		}
@@ -127,25 +140,18 @@ export const Snake: React.FC<SnakeProps> = ({
 
 		const newDirection = DIRECTION_BY_KEY[code];
 
-		const isOppositeDirection = direction === OPPOSITE_DIRECTION[newDirection];
-		const isSameDirection = direction === newDirection;
+		const isOppositeDirection = directionRef.current === OPPOSITE_DIRECTION[newDirection];
+
+		const isSameDirection = directionRef.current === newDirection;
 
 		if (isSameDirection || isOppositeDirection) {
+			handleMove();
+
 			return;
 		}
 		setDirection(newDirection);
 		startRef.current = performance.now();
-		const {
-			state,
-			self: updatedSnake,
-			foodEaten,
-		} = getNextTickSnake(coordinates, newDirection, dots, food);
-
-		setCoordinates(updatedSnake);
-		setState(state);
-		if (foodEaten) {
-			onFoodEaten(updatedSnake);
-		}
+		handleMove();
 
 		window.requestAnimationFrame(handleTick);
 	};
@@ -162,9 +168,9 @@ export const Snake: React.FC<SnakeProps> = ({
 	);
 
 	useEffect(() => {
-		window.document.addEventListener('keydown', handleChangeDirection);
+		window.document.addEventListener('keydown', handleChooseDirection);
 
-		return () => window.document.removeEventListener('keydown', handleChangeDirection);
+		return () => window.document.removeEventListener('keydown', handleChooseDirection);
 	});
 
 	return <React.Fragment>{coordinates.map(renderDot)}</React.Fragment>;

@@ -1,23 +1,30 @@
 import { Point } from './food';
 
 export const DEFAULT_DOT_SIZE = 20;
+export const DIRECTIONS = {
+	up: 'up',
+	down: 'down',
+	left: 'left',
+	right: 'right',
+} as const;
+
 export const DIRECTION_BY_KEY = {
-	KeyA: 'left',
-	KeyD: 'right',
-	KeyS: 'down',
-	KeyW: 'up',
-	ArrowLeft: 'left',
-	ArrowRight: 'right',
-	ArrowDown: 'down',
-	ArrowUp: 'up',
+	KeyA: DIRECTIONS.left,
+	KeyD: DIRECTIONS.right,
+	KeyS: DIRECTIONS.down,
+	KeyW: DIRECTIONS.up,
+	ArrowLeft: DIRECTIONS.left,
+	ArrowRight: DIRECTIONS.right,
+	ArrowDown: DIRECTIONS.down,
+	ArrowUp: DIRECTIONS.up,
 } as const;
 export const OPPOSITE_DIRECTION = {
-	up: 'down',
-	down: 'up',
-	left: 'right',
-	right: 'left',
+	up: DIRECTIONS.down,
+	down: DIRECTIONS.up,
+	left: DIRECTIONS.right,
+	right: DIRECTIONS.left,
 } as const;
-export const DEFAULT_DIRECTION = 'up';
+export const DEFAULT_DIRECTION = DIRECTIONS.up;
 
 export const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZE;
 export const CANVAS_HEIGHT = CANVAS_WIDTH;

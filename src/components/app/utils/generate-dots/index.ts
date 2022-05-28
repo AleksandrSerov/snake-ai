@@ -7,7 +7,7 @@ type Args = {
 	size: number;
 };
 export const generateDots = ({
-	generateValue = () => getRandomInt(2),
+	generateValue = () => getRandomInt(2) as 0 | 1,
 	width,
 	height,
 	size,
