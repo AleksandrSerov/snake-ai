@@ -1,8 +1,8 @@
 import matches from 'lodash/matches';
 
 import { getRandomInt } from '../../../../utils/get-random-int';
-import { Dots } from '../..';
 import { EMPTY_VALUE } from '../../constants';
+import { Dots } from '../../game';
 import { Coordinates } from '../../snake';
 
 export const getRandomEmptyDotPoint = (dots: Dots, exclude: Coordinates) => {

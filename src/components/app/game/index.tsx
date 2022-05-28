@@ -55,6 +55,9 @@ export const Game: FC<GameProps> = ({ onFinish }) => {
 
 	const handleStateChange: SnakeProps['onStateChange'] = (snakeState) => {
 		if (snakeState === 'dead') {
+			if (birthTime === null) {
+				return;
+			}
 			const lifeSpan = Date.now() / 1000 - birthTime;
 
 			onFinish({

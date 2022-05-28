@@ -1,7 +1,7 @@
 import matches from 'lodash/matches';
 
-import { Dots } from '../..';
 import { Point } from '../../food';
+import { Dots } from '../../game';
 import { Coordinates, Direction } from '../../snake';
 
 const iIncMap = {

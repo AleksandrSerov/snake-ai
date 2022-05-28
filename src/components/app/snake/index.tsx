@@ -1,18 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import matches from 'lodash/matches';
 
 import { getRandomInt } from '../../../utils/get-random-int';
 import {
 	DEFAULT_DIRECTION,
 	DEFAULT_SNAKE_SELF,
 	DIRECTION_BY_KEY,
-	DIRECTIONS,
 	OPPOSITE_DIRECTION,
 	TICK_MS,
 } from '../constants';
+import { Dots } from '../game';
 import { Rectangle } from '../rectangle';
 import { getNextTickSnake } from '../utils/get-next-tick-snake';
-import { Dots } from '..';
 type Point = [number, number];
 export type Coordinates = Array<Point>;
 export type Direction = 'up' | 'down' | 'left' | 'right';
