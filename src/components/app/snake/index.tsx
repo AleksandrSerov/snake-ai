@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { matches } from 'lodash';
+import { matches, zip } from 'lodash';
 
 import { getRandomInt } from '../../../utils/get-random-int';
+import { multiplyMatrix } from '../../../utils/multiply-matrix';
 import {
 	CANVAS_WIDTH,
 	DEFAULT_DIRECTION,
@@ -30,11 +31,16 @@ export type SnakeProps = {
 	onStateChange?: (state: 'alive' | 'dead') => void;
 };
 
-const getRandomMatrix = (x: number, y: number) =>
-	new Array(y).fill(null).map(() => new Array(x).fill(Math.random() * 2 - 1));
+const getRandomMatrix = (columns: number, rows: number) =>
+	new Array(rows)
+		.fill(null)
+		.map(() => new Array(columns).fill(null).map(() => Math.random() * 2 - 1));
 
 const activationFunc = (x: number) => Math.max(0, x);
 
+const inputToHidden = getRandomMatrix(12, 25);
+
+const hiddenToOutput = getRandomMatrix(4, 13);
 const getDistanceBetween = (a: Point, b: Point) => {
 	const [x1, y1] = a;
 	const [x2, y2] = b;
@@ -122,7 +128,15 @@ const scanDirection = ({
 
 const isControlKey = (key: string): key is keyof typeof DIRECTION_BY_KEY =>
 	Object.keys(DIRECTION_BY_KEY).includes(key);
-const normalize = (value: number) => 1 / value;
+const normalize = (value: number) => {
+	if (value === 0) {
+		return 0.00001;
+	}
+
+	return 1 / value;
+};
+
+const d = ['up', 'down', 'left', 'right'];
 const chooseDirection = ({
 	dots,
 	snake,
@@ -136,16 +150,16 @@ const chooseDirection = ({
 		.map((direction) => scanDirection({ snake, food, direction }))
 		.flat()
 		.map(normalize);
+	const inputLayer = info;
+
+	const hiddenLayer = multiplyMatrix([[...inputLayer, 1]], inputToHidden)[0].map(activationFunc);
+
+	const outputLayer = multiplyMatrix([[...hiddenLayer, 1]], hiddenToOutput)[0];
+	const maxValue = Math.max(...outputLayer);
+	const maxIndex = outputLayer.findIndex((value) => value === maxValue);
 	const directions = Object.keys(DIRECTION_BY_KEY);
-	const randomIndex = getRandomInt(directions.length);
-	const input = info;
 
-	const middleput = [];
-	const output = [];
-
-	const inputToMiddleput = console.log(info);
-
-	return directions[randomIndex];
+	return directions[maxIndex];
 };
 
 export const Snake: React.FC<SnakeProps> = ({
