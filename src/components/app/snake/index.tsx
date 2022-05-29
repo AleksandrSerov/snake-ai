@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { matches } from 'lodash';
 
 import { getRandomInt } from '../../../utils/get-random-int';
 import {
+	CANVAS_WIDTH,
 	DEFAULT_DIRECTION,
+	DEFAULT_DOT_SIZE,
 	DEFAULT_SNAKE_SELF,
 	DIRECTION_BY_KEY,
 	OPPOSITE_DIRECTION,
+	SCAN_DIRECTIONS,
+	SCAN_VECTOR_BY_SCAN_DIRECTION,
 	TICK_MS,
 } from '../constants';
 import { Dots } from '../game';
@@ -25,11 +30,120 @@ export type SnakeProps = {
 	onStateChange?: (state: 'alive' | 'dead') => void;
 };
 
+const getRandomMatrix = (x: number, y: number) =>
+	new Array(y).fill(null).map(() => new Array(x).fill(Math.random() * 2 - 1));
+
+const activationFunc = (x: number) => Math.max(0, x);
+
+const getDistanceBetween = (a: Point, b: Point) => {
+	const [x1, y1] = a;
+	const [x2, y2] = b;
+
+	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+};
+const sumVectors = (vector1: Point, vector2: Point) => {
+	const [x1, y1] = vector1;
+	const [x2, y2] = vector2;
+
+	return [x1 + x2, y1 + y2] as Point;
+};
+const scaleVector = (vector: Point, scale: number) => vector.map((coord) => coord * scale) as Point;
+
+const isBorderPoint = (point: Point) =>
+	point.some((coord) => coord < 0 || coord > CANVAS_WIDTH / DEFAULT_DOT_SIZE - 1);
+const getDistanceToBorder = (head: Point, vector: Point) => {
+	let scale = 1;
+	let targetPoint = sumVectors(head, scaleVector(vector, scale));
+
+	while (!isBorderPoint(targetPoint)) {
+		scale += 1;
+		targetPoint = sumVectors(head, scaleVector(vector, scale));
+	}
+
+	return getDistanceBetween(head, targetPoint);
+};
+
+const isTailPoint = (point: Point, tail: Array<Point>) =>
+	tail.some((tailPoint) => matches(point)(tailPoint));
+const getDistanceToTail = (head: Point, vector: Point, tail: Coordinates) => {
+	let scale = 1;
+	let targetPoint = sumVectors(head, scaleVector(vector, scale));
+
+	while (!isTailPoint(targetPoint, tail) && !isBorderPoint(targetPoint)) {
+		scale += 1;
+		targetPoint = sumVectors(head, scaleVector(vector, scale));
+	}
+
+	if (!isTailPoint(targetPoint, tail)) {
+		return 0;
+	}
+
+	return getDistanceBetween(head, targetPoint);
+};
+
+const isFoodPoint = (point: Point, foodPoint: Point) => matches(point)(foodPoint);
+
+const getDistanceToFood = (head: Point, vector: Point, food: Point) => {
+	let scale = 1;
+	let targetPoint = sumVectors(head, scaleVector(vector, scale));
+
+	while (!isFoodPoint(targetPoint, food) && !isBorderPoint(targetPoint)) {
+		scale += 1;
+		targetPoint = sumVectors(head, scaleVector(vector, scale));
+	}
+
+	if (!isFoodPoint(targetPoint, food)) {
+		return 0;
+	}
+
+	return getDistanceBetween(head, targetPoint);
+};
+
+type TupleToUnion<T extends Array<any>> = T[number];
+const scanDirection = ({
+	snake,
+	food,
+	direction,
+}: {
+	snake: Array<Point>;
+	food: Point;
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	//@ts-ignore
+	direction: TupleToUnion<typeof SCAN_DIRECTIONS>;
+}) => {
+	const vector = SCAN_VECTOR_BY_SCAN_DIRECTION[direction] as Point;
+	const [head, ...tail] = snake;
+	const distanceToBorder = getDistanceToBorder(head, vector);
+	const distanceToTail = getDistanceToTail(head, vector, tail);
+	const distanceToFood = getDistanceToFood(head, vector, food);
+
+	return [distanceToBorder, distanceToTail, distanceToFood];
+};
+
 const isControlKey = (key: string): key is keyof typeof DIRECTION_BY_KEY =>
 	Object.keys(DIRECTION_BY_KEY).includes(key);
-const chooseDirection = () => {
+const normalize = (value: number) => 1 / value;
+const chooseDirection = ({
+	dots,
+	snake,
+	food,
+}: {
+	dots: Dots;
+	snake: Coordinates;
+	food: Point;
+}) => {
+	const info = Object.values(SCAN_DIRECTIONS)
+		.map((direction) => scanDirection({ snake, food, direction }))
+		.flat()
+		.map(normalize);
 	const directions = Object.keys(DIRECTION_BY_KEY);
 	const randomIndex = getRandomInt(directions.length);
+	const input = info;
+
+	const middleput = [];
+	const output = [];
+
+	const inputToMiddleput = console.log(info);
 
 	return directions[randomIndex];
 };
@@ -105,7 +219,7 @@ export const Snake: React.FC<SnakeProps> = ({
 			return;
 		}
 		startRef.current = timestamp;
-		const dir = chooseDirection();
+		const dir = chooseDirection({ dots, snake: refCoordinates.current, food });
 
 		handleChooseDirection({ code: dir } as KeyboardEvent);
 

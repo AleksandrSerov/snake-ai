@@ -9,7 +9,7 @@ import { Grid } from './grid';
 
 import styles from './index.module.css';
 
-const PARALLEL_RUNS_COUNT = 50;
+const PARALLEL_RUNS_COUNT = 1;
 const array = new Array(PARALLEL_RUNS_COUNT).fill(getRandomInt(PARALLEL_RUNS_COUNT));
 
 export const App: FC = () => (
