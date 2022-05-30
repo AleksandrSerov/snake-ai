@@ -1,3 +1,5 @@
+import { getRandomInt } from '../../utils/get-random-int';
+
 import { Point } from './food';
 
 export const DEFAULT_DOT_SIZE = 20;
@@ -53,17 +55,36 @@ export const CANVAS_WIDTH = Math.trunc(700 / DEFAULT_DOT_SIZE) * DEFAULT_DOT_SIZ
 export const CANVAS_HEIGHT = CANVAS_WIDTH;
 export const midI = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2);
 export const midJ = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2);
-export const DEFAULT_SNAKE_SELF = [
-	[midI, midJ],
-	[midI + 1, midJ],
-	[midI + 2, midJ],
-	[midI + 3, midJ],
-] as Array<Point>;
+export const getDefaultSnakeSelf = () => {
+	const [j, i] = [getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 5, 5), getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 5, 5)];
+	const v1 = [
+		[i, j],
+		[i + 1, j],
+		[i + 2, j],
+		[i + 3, j],
+	];
+	const v2 = [
+		[i, j],
+		[i - 1, j],
+		[i - 2, j],
+		[i - 3, j],
+	];
+	const v3 = [
+		[i, j],
+		[i, j + 1],
+		[i, j + 2],
+		[i, j + 3],
+	];
+	const v4 = [
+		[i, j],
+		[i, j - 1],
+		[i, j - 2],
+		[i, j - 3],
+	];
+	const resArr = [v1, v2, v3, v4];
 
-export const DEFAULT_SNAKE = {
-	state: 'alive' as const,
-	foodEaten: false,
-	self: DEFAULT_SNAKE_SELF,
+	return resArr[getRandomInt(resArr.length)];
+
 };
 
 export const EMPTY_VALUE = 0;
