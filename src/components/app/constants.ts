@@ -1,9 +1,7 @@
 import { getRandomInt } from '../../utils/get-random-int';
 
-import { Point } from './food';
-
 export const DEFAULT_DOT_SIZE = 20;
-export const TICK_MS = 50;
+export const TICK_MS = 16;
 export const MOVE_DIRECTIONS = {
 	up: 'up',
 	down: 'down',
@@ -81,7 +79,7 @@ export const getDefaultSnakeSelf = () => {
 		[i, j - 2],
 		[i, j - 3],
 	];
-	const resArr = [v1, v2, v3, v4];
+	const resArr = [v1, v4, v3];
 
 	return resArr[getRandomInt(resArr.length)];
 

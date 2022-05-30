@@ -52,7 +52,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const playStateRef = useRef(playState);
 
 	useEffect(() => {
-		if (Date.now() / 1000 - birthTime >= 50) {
+		if (Date.now() / 1000 - birthTime >= 20) {
 			setState('dead');
 
 			return;
@@ -190,6 +190,10 @@ export const Snake: React.FC<SnakeProps> = ({
 
 		return () => window.document.removeEventListener('keydown', handleChooseDirection);
 	});
+
+	if (state === 'dead') {
+		return null;
+	}
 
 	return <React.Fragment>{coordinates.map(renderDot)}</React.Fragment>;
 };

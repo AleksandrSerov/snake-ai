@@ -8,7 +8,7 @@ import { Grid } from './grid';
 
 import styles from './index.module.css';
 
-const PARALLEL_RUNS_COUNT = 25;
+const PARALLEL_RUNS_COUNT = 70;
 
 const getInitialGames = () =>
 	new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => ({
@@ -62,14 +62,15 @@ export const App: FC = () => {
 	const [games, setGames] = useState(getInitialGames());
 	const [stats, setStats] = useState([]);
 	const [best, setBest] = useState(null);
+	const [generation, setGeneration] = useState(0);
 	const [birthTime, setBirthTime] = useState(Date.now() / 1000);
 
 	const handleFinish: (i: number) => GameProps['onFinish'] = (i) => (stat) => {
 		const lifespan = Date.now() / 1000 - birthTime;
-		const scores = Math.sqrt(lifespan) + Math.pow(2, stat.eatenFoodCount);
+		const scores = Math.sqrt(lifespan) + Math.pow(2, 1 + stat.eatenFoodCount);
 
-		setStats([
-			...stats,
+		setStats((prevStats) => [
+			...prevStats,
 			{
 				...stat,
 				index: i,
@@ -80,6 +81,7 @@ export const App: FC = () => {
 	};
 
 	useEffect(() => {
+
 		if (stats.length !== PARALLEL_RUNS_COUNT) {
 			return;
 		}
@@ -87,6 +89,7 @@ export const App: FC = () => {
 		const bestResult = stats.sort((a, b) => b.scores - a.scores)[0];
 
 		setBest(bestResult);
+		setGeneration((prev) => prev + 1);
 		console.log(bestResult);
 
 		setStats([]);
@@ -112,6 +115,7 @@ export const App: FC = () => {
 		<div className={ styles.app }>
 			{best && (
 				<div>
+					<div>generation number - {generation}</div>
 					<div>eatenFoodCount - {best.eatenFoodCount}</div>
 					<div>lifespan - {best.lifespan}</div>
 					<div>scores - {best.scores}</div>

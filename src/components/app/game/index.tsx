@@ -84,20 +84,18 @@ export const Game: FC<GameProps> = ({ onFinish, brain, birthTime }) => {
 
 	return (
 		<React.Fragment>
-			{playState !== 'finish' && (
-				<Snake
-					defaultCoordinates={ defaultSnakeRef.current }
-					dotSize={ DEFAULT_DOT_SIZE }
-					playState={ playState }
-					setPlayState={ setPlayState }
-					dots={ DEFAULT_DOTS }
-					food={ food }
-					onFoodEaten={ handleFoodEaten }
-					onStateChange={ handleStateChange }
-					brain={ brain }
-					birthTime={ birthTime }
-				/>
-			)}
+			<Snake
+				defaultCoordinates={ defaultSnakeRef.current }
+				dotSize={ DEFAULT_DOT_SIZE }
+				playState={ playState }
+				setPlayState={ setPlayState }
+				dots={ DEFAULT_DOTS }
+				food={ food }
+				onFoodEaten={ handleFoodEaten }
+				onStateChange={ handleStateChange }
+				brain={ brain }
+				birthTime={ birthTime }
+			/>
 			{food && playState !== 'finish' && <Food point={ food } dotSize={ DEFAULT_DOT_SIZE } />}
 		</React.Fragment>
 	);
