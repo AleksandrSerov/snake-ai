@@ -1,7 +1,13 @@
 import { matches } from 'lodash';
 
 import { multiplyMatrix } from '../../../../utils/multiply-matrix';
-import { CANVAS_WIDTH, DEFAULT_DOT_SIZE, DIRECTION_BY_KEY, SCAN_DIRECTIONS, SCAN_VECTOR_BY_SCAN_DIRECTION } from '../../constants';
+import {
+	CANVAS_WIDTH,
+	DEFAULT_DOT_SIZE,
+	DIRECTION_BY_KEY,
+	SCAN_DIRECTIONS,
+	SCAN_VECTOR_BY_SCAN_DIRECTION,
+} from '../../constants';
 import { Point } from '../../food';
 
 const normalize = (value: number) => {
@@ -11,7 +17,6 @@ const normalize = (value: number) => {
 
 	return 1 / value;
 };
-
 
 type TupleToUnion<T extends Array<any>> = T[number];
 const getRandomMatrix = (columns: number, rows: number) =>
@@ -24,6 +29,11 @@ const activationFunc = (x: number) => Math.max(0, x);
 // const inputToHidden = getRandomMatrix(12, 25);
 
 // const hiddenToOutput = getRandomMatrix(4, 13);
+
+// const br = {
+// 	part1: inputToHidden,
+// 	part2: hiddenToOutput,
+// };
 
 const getDistanceBetween = (a: Point, b: Point) => {
 	const [x1, y1] = a;
@@ -94,11 +104,11 @@ const scanDirection = ({
 	food,
 	direction,
 }: {
-    snake: Array<Point>;
-    food: Point;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    direction: TupleToUnion<typeof SCAN_DIRECTIONS>;
+	snake: Array<Point>;
+	food: Point;
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	//@ts-ignore
+	direction: TupleToUnion<typeof SCAN_DIRECTIONS>;
 }) => {
 	const vector = SCAN_VECTOR_BY_SCAN_DIRECTION[direction] as Point;
 	const [head, ...tail] = snake;
@@ -109,18 +119,17 @@ const scanDirection = ({
 	return [distanceToBorder, distanceToTail, distanceToFood];
 };
 
-
 const think = ({
 	snake,
 	food,
 	brain,
 }: {
-    snake: Array<Point>;
-    food: Point;
+	snake: Array<Point>;
+	food: Point;
 	brain: {
-		part1: Array<Array<number>>,
-		part2: Array<Array<number>>,
-	}
+		part1: Array<Array<number>>;
+		part2: Array<Array<number>>;
+	};
 }) => {
 	const info = Object.values(SCAN_DIRECTIONS)
 		.map((direction) => scanDirection({ snake, food, direction }))
@@ -137,7 +146,6 @@ const think = ({
 
 	return directions[maxIndex];
 };
-
 
 export const brain = {
 	think,

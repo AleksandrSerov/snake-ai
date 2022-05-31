@@ -52,7 +52,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const playStateRef = useRef(playState);
 
 	useEffect(() => {
-		if (Date.now() / 1000 - birthTime >= 20) {
+		if (Date.now() / 1000 - birthTime >= 10) {
 			setState('dead');
 
 			return;

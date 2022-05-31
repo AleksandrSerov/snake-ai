@@ -1,5 +1,6 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Stage } from '@inlet/react-pixi';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import brain from './snake/brain/brain.json';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_DOT_SIZE } from './constants';
@@ -8,7 +9,7 @@ import { Grid } from './grid';
 
 import styles from './index.module.css';
 
-const PARALLEL_RUNS_COUNT = 70;
+const PARALLEL_RUNS_COUNT = 1;
 
 const getInitialGames = () =>
 	new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => ({
@@ -20,9 +21,10 @@ const getInitialGames = () =>
 
 const pickRandomByScores = (
 	snakes: Array<{
-		eatenFoodCount: number;
-		lifeSpan: number;
+		index: number;
+		lifespan: number;
 		scores: number;
+		eatenFoodCount: number;
 		brain: {
 			part1: Array<Array<number>>;
 			part2: Array<Array<number>>;
@@ -44,11 +46,18 @@ const pickRandomByScores = (
 
 	return snakes[targetIndex];
 };
-const mixBrain = (p1, p2) =>
-	p1.map((array, index) =>
+const mixBrain = (p1, p2) => {
+	let count = 0;
+	const newBrain = p1.map((array, index) =>
 		array.map((item, index1) => {
-			if (Math.random().toFixed(2) === '0.20') {
-				return Math.random() * 2 - 1;
+			const random = Math.random().toFixed(2);
+
+			if (random === '0.01' || random === '0.02') {
+				const newValue = Math.random() * 2 - 1;
+
+				count += 1;
+
+				return newValue;
 			}
 			if (Math.random() >= 0.5) {
 				return item;
@@ -58,16 +67,38 @@ const mixBrain = (p1, p2) =>
 		}),
 	);
 
+	console.log('mutation percent - ', (count / (p1.length * p1[0].length)) * 100, ' %');
+
+	return newBrain;
+};
+
 export const App: FC = () => {
 	const [games, setGames] = useState(getInitialGames());
-	const [stats, setStats] = useState([]);
-	const [best, setBest] = useState(null);
+	const [stats, setStats] = useState<
+		Array<{
+			index: number;
+			lifespan: number;
+			scores: number;
+			eatenFoodCount: number;
+			brain: {
+				part1: Array<Array<number>>;
+				part2: Array<Array<number>>;
+			};
+		}>
+	>([]);
+	const [best, setBest] = useState<{
+		index: number;
+		lifespan: number;
+		scores: number;
+		eatenFoodCount: number;
+	} | null>(null);
 	const [generation, setGeneration] = useState(0);
 	const [birthTime, setBirthTime] = useState(Date.now() / 1000);
+	const [data, setData] = useState<Array<{ generation: number; scores: number }>>([]);
 
 	const handleFinish: (i: number) => GameProps['onFinish'] = (i) => (stat) => {
 		const lifespan = Date.now() / 1000 - birthTime;
-		const scores = Math.sqrt(lifespan) + Math.pow(2, 1 + stat.eatenFoodCount);
+		const scores = Math.pow(lifespan, 2) * Math.pow(2, stat.eatenFoodCount);
 
 		setStats((prevStats) => [
 			...prevStats,
@@ -81,13 +112,13 @@ export const App: FC = () => {
 	};
 
 	useEffect(() => {
-
 		if (stats.length !== PARALLEL_RUNS_COUNT) {
 			return;
 		}
 		setBirthTime(Date.now() / 1000);
 		const bestResult = stats.sort((a, b) => b.scores - a.scores)[0];
 
+		setData((prevData) => [...prevData, { generation, scores: bestResult.scores }]);
 		setBest(bestResult);
 		setGeneration((prev) => prev + 1);
 		console.log(bestResult);
@@ -113,6 +144,17 @@ export const App: FC = () => {
 
 	return (
 		<div className={ styles.app }>
+			<LineChart
+				width={ 600 }
+				height={ 300 }
+				data={ data }
+				margin={ { top: 5, right: 20, bottom: 5, left: 0 } }
+			>
+				<Line type='monotone' dataKey='scores' stroke='#8884d8' />
+				<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
+				<XAxis dataKey='generation' />
+				<YAxis />
+			</LineChart>
 			{best && (
 				<div>
 					<div>generation number - {generation}</div>
@@ -131,7 +173,13 @@ export const App: FC = () => {
 				} }
 			>
 				{games.map((item, i) => (
-					<Game key={ i } onFinish={ handleFinish(i) } brain={ item.brain } birthTime={ birthTime } />
+					<Game
+						// eslint-disable-next-line react/no-array-index-key
+						key={ i }
+						onFinish={ handleFinish(i) }
+						brain={ item.brain }
+						birthTime={ birthTime }
+					/>
 				))}
 
 				<Grid width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } dotWidth={ DEFAULT_DOT_SIZE } />
