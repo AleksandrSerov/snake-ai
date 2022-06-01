@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { DEFAULT_DIRECTION, DIRECTION_BY_KEY, OPPOSITE_DIRECTION, TICK_MS } from '../constants';
+import {
+	DEFAULT_DIRECTION,
+	DIRECTION_BY_KEY,
+	MAX_LIFESPAN_SEC,
+	OPPOSITE_DIRECTION,
+	TICK_MS,
+} from '../constants';
 import { Dots } from '../game';
 import { Rectangle } from '../rectangle';
 import { getNextTickSnake } from '../utils/get-next-tick-snake';
@@ -52,7 +58,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const playStateRef = useRef(playState);
 
 	useEffect(() => {
-		if (Date.now() / 1000 - birthTime >= 10) {
+		if (Date.now() / 1000 - birthTime >= MAX_LIFESPAN_SEC) {
 			setState('dead');
 
 			return;
@@ -120,22 +126,27 @@ export const Snake: React.FC<SnakeProps> = ({
 			return;
 		}
 		startRef.current = timestamp;
-		const dir = brain.think({ snake: refCoordinates.current, food, brain: brainProp });
+		const dir = brain.think({
+			snake: refCoordinates.current,
+			food: foodRef.current,
+			brain: brainProp,
+		});
 
 		handleChooseDirection({ code: dir } as KeyboardEvent);
 
 		window.requestAnimationFrame(handleTick);
 	};
 
-	const handleMove = () => {
+	const handleMove = (direction: Direction) => {
 		const {
 			state,
 			self: updatedSnake,
 			foodEaten,
-		} = getNextTickSnake(refCoordinates.current, directionRef.current, dots, foodRef.current);
+		} = getNextTickSnake(refCoordinates.current, direction, dots, foodRef.current);
 
 		setCoordinates(updatedSnake);
 		setState(state);
+
 		if (foodEaten) {
 			onFoodEaten(updatedSnake);
 		}
@@ -162,14 +173,20 @@ export const Snake: React.FC<SnakeProps> = ({
 
 		const isSameDirection = directionRef.current === newDirection;
 
-		if (isSameDirection || isOppositeDirection) {
-			handleMove();
+		// if (isOppositeDirection) {
+		// 	handleMove(direction);
+
+		// 	return;
+		// }
+		if (isSameDirection) {
+			handleMove(direction);
 
 			return;
 		}
 		setDirection(newDirection);
+
 		startRef.current = performance.now();
-		handleMove();
+		handleMove(newDirection);
 
 		window.requestAnimationFrame(handleTick);
 	};

@@ -140,9 +140,11 @@ const think = ({
 	const hiddenLayer = multiplyMatrix([[...inputLayer, 1]], brain.part1)[0].map(activationFunc);
 
 	const outputLayer = multiplyMatrix([[...hiddenLayer, 1]], brain.part2)[0];
+
 	const maxValue = Math.max(...outputLayer);
 	const maxIndex = outputLayer.findIndex((value) => value === maxValue);
-	const directions = Object.keys(DIRECTION_BY_KEY);
+
+	const directions = ['KeyW', 'KeyA', 'KeyS', 'KeyD'] as const;
 
 	return directions[maxIndex];
 };

@@ -54,7 +54,10 @@ export const CANVAS_HEIGHT = CANVAS_WIDTH;
 export const midI = Math.trunc(CANVAS_HEIGHT / DEFAULT_DOT_SIZE / 2);
 export const midJ = Math.trunc(CANVAS_WIDTH / DEFAULT_DOT_SIZE / 2);
 export const getDefaultSnakeSelf = () => {
-	const [j, i] = [getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 5, 5), getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 5, 5)];
+	const [j, i] = [
+		getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 3, 3),
+		getRandomInt(CANVAS_HEIGHT / DEFAULT_DOT_SIZE - 3, 3),
+	];
 	const v1 = [
 		[i, j],
 		[i + 1, j],
@@ -79,12 +82,14 @@ export const getDefaultSnakeSelf = () => {
 		[i, j - 2],
 		[i, j - 3],
 	];
-	const resArr = [v1, v4, v3];
+	const resArr = [v1];
 
 	return resArr[getRandomInt(resArr.length)];
-
 };
 
 export const EMPTY_VALUE = 0;
 export const BORDER_VALUE = 1;
 export const FOOD_VALUE = 2;
+
+export const MAX_LIFESPAN_SEC = 10;
+export const PARALLEL_RUNS_COUNT = 25;

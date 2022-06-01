@@ -3,13 +3,11 @@ import { Stage } from '@inlet/react-pixi';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import brain from './snake/brain/brain.json';
-import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_DOT_SIZE } from './constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_DOT_SIZE, PARALLEL_RUNS_COUNT } from './constants';
 import { Game, GameProps } from './game';
 import { Grid } from './grid';
 
 import styles from './index.module.css';
-
-const PARALLEL_RUNS_COUNT = 1;
 
 const getInitialGames = () =>
 	new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => ({
@@ -35,7 +33,7 @@ const pickRandomByScores = (
 
 	const forRandom = snakes.map(({ scores }, index) => ({
 		index,
-		res: Math.round((scores * 100) / sumScores),
+		res: Math.round((scores / sumScores) * 100),
 	}));
 
 	const arrforRandom = forRandom
@@ -67,7 +65,7 @@ const mixBrain = (p1, p2) => {
 		}),
 	);
 
-	console.log('mutation percent - ', (count / (p1.length * p1[0].length)) * 100, ' %');
+	// console.log('mutation percent - ', (count / (p1.length * p1[0].length)) * 100, ' %');
 
 	return newBrain;
 };
@@ -116,12 +114,12 @@ export const App: FC = () => {
 			return;
 		}
 		setBirthTime(Date.now() / 1000);
-		const bestResult = stats.sort((a, b) => b.scores - a.scores)[0];
+		const bestResult = [...stats].sort((a, b) => b.scores - a.scores)[0];
 
 		setData((prevData) => [...prevData, { generation, scores: bestResult.scores }]);
 		setBest(bestResult);
 		setGeneration((prev) => prev + 1);
-		console.log(bestResult);
+		console.log(bestResult.brain);
 
 		setStats([]);
 		const newGeneration = new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => {
@@ -181,7 +179,6 @@ export const App: FC = () => {
 						birthTime={ birthTime }
 					/>
 				))}
-
 				<Grid width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } dotWidth={ DEFAULT_DOT_SIZE } />
 			</Stage>
 		</div>
