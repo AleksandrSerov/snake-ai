@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
 	DEFAULT_DIRECTION,
 	DIRECTION_BY_KEY,
+	enableAI,
 	MAX_LIFESPAN_SEC,
 	OPPOSITE_DIRECTION,
 	TICK_MS,
@@ -23,6 +24,7 @@ const isControlKey = (key: string): key is keyof typeof DIRECTION_BY_KEY =>
 export type SnakeProps = {
 	birthTime: number;
 	defaultCoordinates: Array<Array<number>>;
+	defaultDirection: Direction;
 	brain: {
 		part1: Array<Array<number>>;
 		part2: Array<Array<number>>;
@@ -38,6 +40,7 @@ export type SnakeProps = {
 
 export const Snake: React.FC<SnakeProps> = ({
 	defaultCoordinates,
+	defaultDirection,
 	brain: brainProp,
 	dotSize,
 	playState,
@@ -52,7 +55,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const refCoordinates = useRef<Array<Array<number>>>(coordinates);
 	const startRef = useRef<number>();
 	const foodRef = useRef(food);
-	const [direction, setDirection] = useState<Direction>('up');
+	const [direction, setDirection] = useState<Direction>(defaultDirection);
 	const directionRef = useRef<Direction>(direction);
 	const [state, setState] = useState<'alive' | 'dead'>('alive');
 	const playStateRef = useRef(playState);
@@ -126,13 +129,15 @@ export const Snake: React.FC<SnakeProps> = ({
 			return;
 		}
 		startRef.current = timestamp;
-		const dir = brain.think({
-			snake: refCoordinates.current,
-			food: foodRef.current,
-			brain: brainProp,
-		});
+		if (enableAI) {
+			const dir = brain.think({
+				snake: refCoordinates.current,
+				food: foodRef.current,
+				brain: brainProp,
+			});
 
-		handleChooseDirection({ code: dir } as KeyboardEvent);
+			handleChooseDirection({ code: dir } as KeyboardEvent);
+		}
 
 		window.requestAnimationFrame(handleTick);
 	};
@@ -173,11 +178,11 @@ export const Snake: React.FC<SnakeProps> = ({
 
 		const isSameDirection = directionRef.current === newDirection;
 
-		// if (isOppositeDirection) {
-		// 	handleMove(direction);
+		if (isOppositeDirection) {
+			handleMove(direction);
 
-		// 	return;
-		// }
+			return;
+		}
 		if (isSameDirection) {
 			handleMove(direction);
 

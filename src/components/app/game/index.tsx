@@ -7,7 +7,7 @@ import {
 	DEFAULT_DOT_SIZE,
 	EMPTY_VALUE,
 	FOOD_VALUE,
-	getDefaultSnakeSelf,
+	getDefaultSnake,
 } from '../constants';
 import { Food, Point } from '../food';
 import { Snake, SnakeProps } from '../snake';
@@ -46,11 +46,11 @@ export type GameProps = {
 	}) => void;
 };
 export const Game: FC<GameProps> = ({ onFinish, brain, birthTime }) => {
-	const defaultSnakeRef = useRef(getDefaultSnakeSelf());
+	const defaultSnakeRef = useRef(getDefaultSnake());
 	const [eatenFoodCount, setEatenFoodCount] = useState(0);
 	const [playState, setPlayState] = useState<'iddle' | 'playing' | 'finish'>('playing');
 	const [food, setFood] = useState<Point>(
-		getRandomEmptyDotPoint(DEFAULT_DOTS, defaultSnakeRef.current),
+		getRandomEmptyDotPoint(DEFAULT_DOTS, defaultSnakeRef.current.self),
 	);
 	const handleFoodEaten: SnakeProps['onFoodEaten'] = (snake) => {
 		setEatenFoodCount((prevCount) => prevCount + 1);
@@ -62,6 +62,10 @@ export const Game: FC<GameProps> = ({ onFinish, brain, birthTime }) => {
 			setPlayState('iddle');
 			setPlayState('playing');
 		}
+	}, [brain]);
+
+	useEffect(() => {
+		defaultSnakeRef.current = getDefaultSnake();
 	}, [brain]);
 
 	const handleStateChange: SnakeProps['onStateChange'] = (snakeState) => {
@@ -85,7 +89,8 @@ export const Game: FC<GameProps> = ({ onFinish, brain, birthTime }) => {
 	return (
 		<React.Fragment>
 			<Snake
-				defaultCoordinates={ defaultSnakeRef.current }
+				defaultDirection={ defaultSnakeRef.current.direction }
+				defaultCoordinates={ defaultSnakeRef.current.self }
 				dotSize={ DEFAULT_DOT_SIZE }
 				playState={ playState }
 				setPlayState={ setPlayState }
