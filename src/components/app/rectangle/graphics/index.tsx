@@ -6,16 +6,8 @@ import * as PIXI from 'pixi.js';
 
 import { RectangleProps } from '..';
 
-const blackColorCode = '#000000';
-const redColorCode = '#FF0000';
-
-const colorByCode = {
-	1: blackColorCode,
-	2: redColorCode,
-};
-
 export const Graphics: FC<RectangleProps> = memo(
-	({ x, y, width, height, dotValue, onClick, onMouseOver, onPointerDown }) => {
+	({ x, y, width, height, color, onClick, onMouseOver, onPointerDown }) => {
 		const draw = useCallback(
 			(g: PIXI.Graphics) => {
 				g.clear();
@@ -30,11 +22,11 @@ export const Graphics: FC<RectangleProps> = memo(
 				if (onClick) {
 					g.on('click', onClick);
 				}
-				g.beginFill(string2hex(colorByCode[dotValue]));
+				g.beginFill(string2hex(color));
 				g.drawRect(x, y, width, height);
 				g.endFill();
 			},
-			[dotValue, height, onClick, onMouseOver, onPointerDown, width, x, y],
+			[color, height, onClick, onMouseOver, onPointerDown, width, x, y],
 		);
 
 		return <PixiGraphics x={ 0 } y={ 0 } draw={ draw } />;

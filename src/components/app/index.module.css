@@ -1,10 +1,7 @@
 .app {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
 	display: grid;
-	grid-template-columns: min-content min-content;
-	justify-content: center;
+	grid-template-columns: min-content 1fr;
+	grid-gap: 20px;
 }
 
 .canvas {

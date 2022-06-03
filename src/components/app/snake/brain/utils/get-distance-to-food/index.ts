@@ -18,7 +18,7 @@ export const getDistanceToFood = (head: Point, vector: Point, food: Point) => {
 	}
 
 	if (isBorder(targetPoint)) {
-		return 0.0000001;
+		return Infinity;
 	}
 
 	return getDistanceBetween(head, targetPoint);

@@ -1,8 +1,8 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { Stage } from '@inlet/react-pixi';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
-import brain from './snake/brain/brain.json';
+import defaultBrain from './snake/brain/brain.json';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_DOT_SIZE, PARALLEL_RUNS_COUNT } from './constants';
 import { Game, GameProps } from './game';
 import { Grid } from './grid';
@@ -12,15 +12,14 @@ import styles from './index.module.css';
 const getInitialGames = () =>
 	new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => ({
 		brain: {
-			part1: brain.part1,
-			part2: brain.part2,
+			part1: defaultBrain.part1,
+			part2: defaultBrain.part2,
 		},
 	}));
 
 const pickRandomByScores = (
 	snakes: Array<{
 		index: number;
-		lifespan: number;
 		scores: number;
 		eatenFoodCount: number;
 		brain: {
@@ -29,9 +28,9 @@ const pickRandomByScores = (
 		};
 	}>,
 ) => {
-	const sumScores = snakes.reduce((acc, { scores }) => acc + scores, 0);
+	const sumScores = Math.round(snakes.reduce((acc, { scores }) => acc + scores, 0));
 
-	const forRandom = snakes.map(({ scores }, index) => ({
+	const forRandom = snakes.map(({ scores, index }) => ({
 		index,
 		res: Math.round((scores / sumScores) * 100),
 	}));
@@ -40,39 +39,52 @@ const pickRandomByScores = (
 		.map(({ index, res }) => String(index).repeat(res).split('').map(Number))
 		.flat();
 
-	const targetIndex = arrforRandom[Math.trunc(Math.random() * 100)];
+	const targetIndex = arrforRandom[Math.trunc(Math.random() * forRandom.length)];
+	const result = snakes[targetIndex];
 
-	return snakes[targetIndex];
+	return result;
 };
-const mixBrain = (p1, p2) => {
-	let count = 0;
+const mixBrain = (p1: Array<Array<number>>, p2: Array<Array<number>>) => {
+	let mutationCount = 0;
+	let firstParentGenes = 0;
+	let secondParentGenes = 0;
 	const newBrain = p1.map((array, index) =>
 		array.map((item, index1) => {
 			const random = Math.random().toFixed(2);
 
-			if (random === '0.01' || random === '0.02') {
+			if (['0.01'].includes(random)) {
 				const newValue = Math.random() * 2 - 1;
 
-				count += 1;
+				mutationCount += 1;
 
 				return newValue;
 			}
-			if (Math.random() >= 0.5) {
+			if (index1 >= array.length / 2) {
+				firstParentGenes += 1;
+
 				return item;
 			}
+			secondParentGenes += 1;
 
 			return p2[index][index1];
 		}),
 	);
+	const totalGenes = p1.length * p1[0].length;
+	const mutationRate = parseFloat(((mutationCount / totalGenes) * 100).toFixed(2));
+	const firstParentGenesRate = parseFloat(((firstParentGenes / totalGenes) * 100).toFixed(2));
+	const secondParentGenesRate = parseFloat(((secondParentGenes / totalGenes) * 100).toFixed(2));
 
-	// console.log('mutation percent - ', (count / (p1.length * p1[0].length)) * 100, ' %');
+	// console.log('mutation rate - ', mutationRate, '%');
+	// console.log('firstParentGenes rate - ', firstParentGenesRate, '%');
+	// console.log('secondParentGenesRate rate - ', secondParentGenesRate, '%');
 
 	return newBrain;
 };
+// console.log(getRandomBrain());
 
 export const App: FC = () => {
 	const [games, setGames] = useState(getInitialGames());
-	const [stats, setStats] = useState<
+	const statsRef = useRef<
 		Array<{
 			index: number;
 			lifespan: number;
@@ -84,6 +96,8 @@ export const App: FC = () => {
 			};
 		}>
 	>([]);
+	const [speed, setSpeed] = useState(100);
+
 	const [best, setBest] = useState<{
 		index: number;
 		lifespan: number;
@@ -91,76 +105,69 @@ export const App: FC = () => {
 		eatenFoodCount: number;
 	} | null>(null);
 	const [generation, setGeneration] = useState(0);
-	const [birthTime, setBirthTime] = useState(Date.now() / 1000);
-	const [data, setData] = useState<Array<{ generation: number; scores: number }>>([]);
+	const [data, setData] = useState<Array<{ generation: number; average: number; best: number }>>(
+		[],
+	);
 
-	const handleFinish: (i: number) => GameProps['onFinish'] = (i) => (stat) => {
-		const lifespan = Date.now() / 1000 - birthTime;
-		const scores = Math.pow(lifespan, 2) * Math.pow(2, stat.eatenFoodCount);
+	const handleFinish: GameProps['onFinish'] = (stat) => {
+		statsRef.current.push({
+			...stat,
+		});
 
-		setStats((prevStats) => [
-			...prevStats,
-			{
-				...stat,
-				index: i,
-				lifespan,
-				scores,
-			},
-		]);
+		if (statsRef.current.length === PARALLEL_RUNS_COUNT) {
+			const bestResult = [...statsRef.current].sort((a, b) => b.scores - a.scores)[0];
+			const sumScores = Math.trunc(
+				statsRef.current.reduce((acc, { scores }) => acc + scores, 0),
+			);
+
+			setData((prevData) => [
+				...prevData,
+				{ generation, best: bestResult.scores, average: sumScores / PARALLEL_RUNS_COUNT },
+			]);
+			setBest(bestResult);
+			// console.table(bestResult);
+			setGeneration((prev) => prev + 1);
+
+			const newGeneration = new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => {
+				const pickFirstParent = pickRandomByScores(statsRef.current);
+				const pickSecondParent = pickRandomByScores(statsRef.current);
+
+				const brain = {
+					part1: mixBrain(pickFirstParent.brain.part1, pickSecondParent.brain.part1),
+					part2: mixBrain(pickFirstParent.brain.part2, pickSecondParent.brain.part2),
+				};
+
+				return {
+					brain,
+				};
+			});
+
+			statsRef.current = [];
+			setGames(newGeneration);
+		}
+	};
+
+	const handleSpeedChange = (e: KeyboardEvent) => {
+		if (e.code === 'Minus') {
+			setSpeed((prevSpeed) => prevSpeed - 10);
+
+			return;
+		}
+		if (e.code === 'Equal') {
+			setSpeed((prevSpeed) => prevSpeed + 10);
+
+			return;
+		}
 	};
 
 	useEffect(() => {
-		if (stats.length !== PARALLEL_RUNS_COUNT) {
-			return;
-		}
-		setBirthTime(Date.now() / 1000);
-		const bestResult = [...stats].sort((a, b) => b.scores - a.scores)[0];
+		window.document.addEventListener('keydown', handleSpeedChange);
 
-		setData((prevData) => [...prevData, { generation, scores: bestResult.scores }]);
-		setBest(bestResult);
-		setGeneration((prev) => prev + 1);
-		console.log(bestResult.brain);
-
-		setStats([]);
-		const newGeneration = new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => {
-			const pickFirstParent = pickRandomByScores(stats) || bestResult;
-
-			const pickSecondParent = pickRandomByScores(stats) || bestResult;
-
-			const brain = {
-				part1: mixBrain(pickFirstParent.brain.part1, pickSecondParent.brain.part1),
-				part2: mixBrain(pickFirstParent.brain.part2, pickSecondParent.brain.part2),
-			};
-
-			return {
-				brain,
-			};
-		});
-
-		setGames(newGeneration);
-	}, [stats]);
+		return () => window.document.removeEventListener('keydown', handleSpeedChange);
+	}, []);
 
 	return (
 		<div className={ styles.app }>
-			<LineChart
-				width={ 600 }
-				height={ 300 }
-				data={ data }
-				margin={ { top: 5, right: 20, bottom: 5, left: 0 } }
-			>
-				<Line type='monotone' dataKey='scores' stroke='#8884d8' />
-				<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
-				<XAxis dataKey='generation' />
-				<YAxis />
-			</LineChart>
-			{best && (
-				<div>
-					<div>generation number - {generation}</div>
-					<div>eatenFoodCount - {best.eatenFoodCount}</div>
-					<div>lifespan - {best.lifespan}</div>
-					<div>scores - {best.scores}</div>
-				</div>
-			)}
 			<Stage
 				className={ styles.canvas }
 				width={ CANVAS_WIDTH }
@@ -174,13 +181,38 @@ export const App: FC = () => {
 					<Game
 						// eslint-disable-next-line react/no-array-index-key
 						key={ i }
-						onFinish={ handleFinish(i) }
+						index={ i }
+						onFinish={ handleFinish }
 						brain={ item.brain }
-						birthTime={ birthTime }
+						speed={ speed }
 					/>
 				))}
 				<Grid width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } dotWidth={ DEFAULT_DOT_SIZE } />
 			</Stage>
+			<div>
+				<div>
+					<div>generation number - {generation}</div>
+					<div>current speed - {speed} %</div>
+
+					<div>eatenFoodCount - {best?.eatenFoodCount}</div>
+					<div>lifespan - {best?.lifespan}</div>
+					<div>scores - {best?.scores}</div>
+				</div>
+				Average
+				<LineChart width={ 500 } height={ 300 } data={ data }>
+					<Line type='monotone' dataKey='average' stroke='#1884d8' />
+					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
+					<XAxis dataKey='generation' />
+					<YAxis />
+				</LineChart>
+				Best
+				<LineChart width={ 500 } height={ 300 } data={ data }>
+					<Line type='monotone' dataKey='best' stroke='#8884d8' />
+					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
+					<XAxis dataKey='generation' />
+					<YAxis />
+				</LineChart>
+			</div>
 		</div>
 	);
 };

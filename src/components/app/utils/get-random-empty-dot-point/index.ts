@@ -5,7 +5,7 @@ import { EMPTY_VALUE } from '../../constants';
 import { Dots } from '../../game';
 import { Coordinates } from '../../snake';
 
-export const getRandomEmptyDotPoint = (dots: Dots, exclude: Coordinates) => {
+export const getRandomEmptyDotPoint = (dots: Dots, exclude: Array<Array<number>>) => {
 	const coordsForRandom = dots
 		.map((array, i) =>
 			array.map((value, j) => {

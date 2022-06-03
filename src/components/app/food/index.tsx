@@ -8,6 +8,9 @@ type Props = {
 	point: Point;
 	dotSize: number;
 };
+
+const redColorCode = '#FF0000';
+
 export const Food: React.FC<Props> = ({ point, dotSize }) => {
 	const [i, j] = point;
 
@@ -18,7 +21,7 @@ export const Food: React.FC<Props> = ({ point, dotSize }) => {
 			y={ i * dotSize }
 			width={ dotSize }
 			height={ dotSize }
-			dotValue={ 2 }
+			color={ redColorCode }
 		/>
 	);
 };

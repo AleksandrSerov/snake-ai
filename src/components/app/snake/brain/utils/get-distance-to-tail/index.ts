@@ -19,7 +19,7 @@ export const getDistanceToTail = (head: Point, vector: Point, tail: Array<Point>
 	}
 
 	if (isBorder(targetPoint)) {
-		return 0.0000001;
+		return Infinity;
 	}
 
 	return getDistanceBetween(head, targetPoint);

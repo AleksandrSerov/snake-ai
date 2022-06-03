@@ -2,7 +2,7 @@ import matches from 'lodash/matches';
 
 import { Point } from '../../food';
 import { Dots } from '../../game';
-import { Coordinates, Direction } from '../../snake';
+import { Direction } from '../../snake';
 
 const iIncMap = {
 	up: -1,
@@ -18,7 +18,7 @@ const jIncMap = {
 };
 
 export const getNextTickSnake = (
-	snake: Coordinates,
+	snake: Array<[number, number]>,
 	direction: Direction,
 	dots: Dots,
 	food: Point,
@@ -57,13 +57,13 @@ export const getNextTickSnake = (
 		return {
 			state: 'alive' as const,
 			foodEaten: true,
-			self: [newHead, ...snake.slice(0, snake.length)] as Array<Point>,
+			self: [newHead, ...snake.slice(0, snake.length)] as Array<[number, number]>,
 		};
 	}
 
 	return {
 		state: 'alive' as const,
 		foodEaten: false,
-		self: [newHead, ...snake.slice(0, snake.length - 1)] as Array<Point>,
+		self: [newHead, ...snake.slice(0, snake.length - 1)] as Array<[number, number]>,
 	};
 };

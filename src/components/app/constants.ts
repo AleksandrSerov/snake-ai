@@ -1,9 +1,8 @@
-import { Point } from 'pixi.js';
-
 import { getRandomInt } from '../../utils/get-random-int';
 
+import { Direction } from './snake';
+
 export const DEFAULT_DOT_SIZE = 20;
-export const TICK_MS = 16;
 export const MOVE_DIRECTIONS = {
 	up: 'up',
 	down: 'down',
@@ -86,11 +85,11 @@ export const getDefaultSnake = () => {
 	];
 	const resArr = [v1, v2, v3, v4];
 	const directions = ['up', 'down', 'left', 'right'];
-	const randomInt = getRandomInt(resArr.length);
+	const randomInt = getRandomInt(resArr.length - 1);
 
 	return {
-		self: resArr[randomInt],
-		direction: directions[randomInt],
+		self: resArr[0] as Array<[number, number]>,
+		direction: directions[0] as Direction,
 	};
 };
 
@@ -99,5 +98,5 @@ export const BORDER_VALUE = 1;
 export const FOOD_VALUE = 2;
 
 export const enableAI = true;
-export const MAX_LIFESPAN_SEC = 15;
-export const PARALLEL_RUNS_COUNT = 20;
+export const MAX_LIFESPAN_TICKS = 200;
+export const PARALLEL_RUNS_COUNT = 100;
