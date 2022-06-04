@@ -26,7 +26,7 @@ const DEFAULT_DOTS = (() => {
 })();
 
 const success = (lifespan: number, eatenFoodCount: number) =>
-	lifespan * Math.pow(2, eatenFoodCount);
+	lifespan * 0.01 + Math.pow(2, eatenFoodCount);
 
 export type Dots = Array<Array<typeof EMPTY_VALUE | typeof BORDER_VALUE | typeof FOOD_VALUE>>;
 type Food = [number, number] | null;
@@ -55,26 +55,21 @@ export type GameProps = {
 	}) => void;
 };
 export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
-	const defaultSnakeRef = useRef(getDefaultSnake());
+	const [snake, setSnake] = useState(getDefaultSnake());
 	const [eatenFoodCount, setEatenFoodCount] = useState(0);
 	const [playState, setPlayState] = useState<'iddle' | 'playing' | 'finish'>('playing');
-	const [food, setFood] = useState<Point>(
-		getRandomEmptyDotPoint(DEFAULT_DOTS, defaultSnakeRef.current.self),
-	);
+	const [food, setFood] = useState<Point>(getRandomEmptyDotPoint(DEFAULT_DOTS, snake.self));
 	const handleFoodEaten: SnakeProps['onFoodEaten'] = (snake) => {
 		setEatenFoodCount((prevCount) => prevCount + 1);
 		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS, snake));
 	};
 
 	useEffect(() => {
-		if (playState === 'finish') {
-			setPlayState('iddle');
-			setPlayState('playing');
-		}
-	}, [brain]);
-
-	useEffect(() => {
-		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS, defaultSnakeRef.current.self));
+		console.log('here');
+		setSnake(getDefaultSnake());
+		setEatenFoodCount(0);
+		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS, snake.self));
+		setPlayState('playing');
 	}, [brain]);
 
 	const handleStateChange: SnakeProps['onStateChange'] = (snakeState, lifespan) => {
@@ -94,21 +89,12 @@ export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
 		}
 	};
 
-	useEffect(() => {
-		if (playState === 'playing') {
-			setEatenFoodCount(0);
-		}
-	}, [playState]);
-
 	return (
 		<React.Fragment>
-			{food && (
+			{playState === 'playing' && (
 				<Snake
-					defaultDirection={ defaultSnakeRef.current.direction }
-					defaultCoordinates={ defaultSnakeRef.current.self }
+					snake={ snake }
 					dotSize={ DEFAULT_DOT_SIZE }
-					playState={ playState }
-					setPlayState={ setPlayState }
 					dots={ DEFAULT_DOTS }
 					food={ food }
 					onFoodEaten={ handleFoodEaten }
@@ -118,7 +104,7 @@ export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
 					eatenFoodCount={ eatenFoodCount }
 				/>
 			)}
-			{food && playState !== 'finish' && <Food point={ food } dotSize={ DEFAULT_DOT_SIZE } />}
+			{playState === 'playing' && <Food point={ food } dotSize={ DEFAULT_DOT_SIZE } />}
 		</React.Fragment>
 	);
 };

@@ -1,5 +1,5 @@
 import { multiplyMatrix } from '../../../../utils/multiply-matrix';
-import { SCAN_DIRECTIONS, SCAN_VECTOR_BY_SCAN_DIRECTION } from '../../constants';
+import { DIRECTION_BY_KEY, SCAN_DIRECTIONS, SCAN_VECTOR_BY_SCAN_DIRECTION } from '../../constants';
 import { Point } from '../../food';
 
 import { activate } from './utils/activate';
@@ -55,7 +55,7 @@ const think = ({
 
 	const directions = ['KeyW', 'KeyA', 'KeyS', 'KeyD'] as const;
 
-	return directions[maxIndex];
+	return DIRECTION_BY_KEY[directions[maxIndex]];
 };
 
 export const brain = {

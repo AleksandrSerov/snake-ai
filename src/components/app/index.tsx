@@ -48,11 +48,15 @@ const mixBrain = (p1: Array<Array<number>>, p2: Array<Array<number>>) => {
 	let mutationCount = 0;
 	let firstParentGenes = 0;
 	let secondParentGenes = 0;
+	const mutationPercent = 0.02;
+	const totalGenes = p1.length * p1[0].length;
+	const maxMutationsCount = totalGenes * mutationPercent;
+
 	const newBrain = p1.map((array, index) =>
 		array.map((item, index1) => {
 			const random = Math.random().toFixed(2);
 
-			if (['0.01'].includes(random)) {
+			if (['0.01', '0.02'].includes(random) && mutationCount < maxMutationsCount) {
 				const newValue = Math.random() * 2 - 1;
 
 				mutationCount += 1;
@@ -69,8 +73,8 @@ const mixBrain = (p1: Array<Array<number>>, p2: Array<Array<number>>) => {
 			return p2[index][index1];
 		}),
 	);
-	const totalGenes = p1.length * p1[0].length;
 	const mutationRate = parseFloat(((mutationCount / totalGenes) * 100).toFixed(2));
+	const maxMutationRate = parseFloat(((maxMutationsCount / totalGenes) * 100).toFixed(2));
 	const firstParentGenesRate = parseFloat(((firstParentGenes / totalGenes) * 100).toFixed(2));
 	const secondParentGenesRate = parseFloat(((secondParentGenes / totalGenes) * 100).toFixed(2));
 
@@ -110,6 +114,7 @@ export const App: FC = () => {
 	);
 
 	const handleFinish: GameProps['onFinish'] = (stat) => {
+		// console.log(stat);
 		statsRef.current.push({
 			...stat,
 		});
@@ -129,8 +134,8 @@ export const App: FC = () => {
 			setGeneration((prev) => prev + 1);
 
 			const newGeneration = new Array(PARALLEL_RUNS_COUNT).fill(null).map(() => {
-				const pickFirstParent = pickRandomByScores(statsRef.current);
-				const pickSecondParent = pickRandomByScores(statsRef.current);
+				const pickFirstParent = pickRandomByScores(statsRef.current) || bestResult;
+				const pickSecondParent = pickRandomByScores(statsRef.current) || bestResult;
 
 				const brain = {
 					part1: mixBrain(pickFirstParent.brain.part1, pickSecondParent.brain.part1),
@@ -198,14 +203,14 @@ export const App: FC = () => {
 					<div>lifespan - {best?.lifespan}</div>
 					<div>scores - {best?.scores}</div>
 				</div>
-				Average
+				Average scores/generation
 				<LineChart width={ 500 } height={ 300 } data={ data }>
 					<Line type='monotone' dataKey='average' stroke='#1884d8' />
 					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
 					<XAxis dataKey='generation' />
 					<YAxis />
 				</LineChart>
-				Best
+				Last generation best scores
 				<LineChart width={ 500 } height={ 300 } data={ data }>
 					<Line type='monotone' dataKey='best' stroke='#8884d8' />
 					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
