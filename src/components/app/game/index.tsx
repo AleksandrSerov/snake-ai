@@ -65,7 +65,6 @@ export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
 	};
 
 	useEffect(() => {
-		console.log('here');
 		setSnake(getDefaultSnake());
 		setEatenFoodCount(0);
 		setFood(getRandomEmptyDotPoint(DEFAULT_DOTS, snake.self));
@@ -91,19 +90,17 @@ export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
 
 	return (
 		<React.Fragment>
-			{playState === 'playing' && (
-				<Snake
-					snake={ snake }
-					dotSize={ DEFAULT_DOT_SIZE }
-					dots={ DEFAULT_DOTS }
-					food={ food }
-					onFoodEaten={ handleFoodEaten }
-					onStateChange={ handleStateChange }
-					brain={ brain }
-					speed={ speed }
-					eatenFoodCount={ eatenFoodCount }
-				/>
-			)}
+			<Snake
+				snake={ snake }
+				dotSize={ DEFAULT_DOT_SIZE }
+				dots={ DEFAULT_DOTS }
+				food={ food }
+				onFoodEaten={ handleFoodEaten }
+				onStateChange={ handleStateChange }
+				brain={ brain }
+				speed={ speed }
+				eatenFoodCount={ eatenFoodCount }
+			/>
 			{playState === 'playing' && <Food point={ food } dotSize={ DEFAULT_DOT_SIZE } />}
 		</React.Fragment>
 	);
