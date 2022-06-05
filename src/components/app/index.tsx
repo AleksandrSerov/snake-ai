@@ -34,6 +34,7 @@ export const App: FC = () => {
 
 			const bestResult = [...statsRef.current].sort((a, b) => b.scores - a.scores)[0];
 
+			console.log(bestResult);
 			const sumScores = Math.trunc(
 				statsRef.current.reduce((acc, { scores }) => acc + scores, 0),
 			);

@@ -49,7 +49,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	eatenFoodCount,
 	speed,
 }) => {
-	const [, forceUpdate] = useState(0);
+	const [update, forceUpdate] = useState(0);
 	const lifespanRef = useRef(0);
 	const coordinatesRef = useRef<Array<[number, number]>>(snake.self);
 	const startRef = useRef<number>();
@@ -88,7 +88,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		if (lifespanRef.current >= MAX_LIFESPAN_TICKS + eatenFoodCount * 500 && state !== 'dead') {
 			setState('dead');
 		}
-	}, [lifespanRef.current]);
+	}, [update]);
 
 	useEffect(() => {
 		window.requestAnimationFrame(handleTick);
@@ -118,12 +118,14 @@ export const Snake: React.FC<SnakeProps> = ({
 		});
 
 		if (enabledAI) {
-			directionRef.current = newDirection;
+			const isOppositeDirection = directionRef.current === OPPOSITE_DIRECTION[newDirection];
+			const isSameDirection = directionRef.current === newDirection;
+			const resultDirection =
+				isOppositeDirection || isSameDirection ? directionRef.current : newDirection;
+
+			directionRef.current = resultDirection;
 		}
 
-		const resultDirection = directionRef.current || newDirection;
-
-		directionRef.current = resultDirection;
 		handleMove();
 
 		window.requestAnimationFrame(handleTick);
