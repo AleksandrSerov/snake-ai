@@ -4,7 +4,7 @@
 	"homepage": "https://aleksandrserov.github.io/snake-ai",
 	"description": "",
 	"scripts": {
-		"start": "tsc --noEmit --watch & parcel ./src/index.html --port 8080 --open --watch-for-stdin",
+		"start": "tsc --noEmit --watch & parcel ./src/index.html --port 8080 --open",
 		"test": "yarn test:unit && yarn test:e2e",
 		"test:unit": "jest",
 		"test:e2e": "start-server-and-test start :8080 \"cypress run\"",
@@ -29,7 +29,7 @@
 		"lodash": "^4.17.21",
 		"lodash.matches": "^4.6.0",
 		"parcel": "^2.2.1",
-		"pixi.js": "^6.3.1",
+		"pixi.js": "^6.4.2",
 		"react": "17.0.0",
 		"react-dom": "17.0.0",
 		"recharts": "^2.1.10",
