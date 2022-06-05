@@ -26,34 +26,28 @@ const DEFAULT_DOTS = (() => {
 })();
 
 const success = (lifespan: number, eatenFoodCount: number) =>
-	lifespan * 0.01 + Math.pow(2, eatenFoodCount);
+	lifespan * Math.pow(2, eatenFoodCount);
 
 export type Dots = Array<Array<typeof EMPTY_VALUE | typeof BORDER_VALUE | typeof FOOD_VALUE>>;
 type Food = [number, number] | null;
-
+export type Brain = {
+	part1: Array<Array<number>>;
+	part2: Array<Array<number>>;
+};
+export type Stat = {
+	index: number;
+	lifespan: number;
+	scores: number;
+	eatenFoodCount: number;
+	brain: Brain;
+};
 export type GameProps = {
 	speed: number;
 	index: number;
-	brain: {
-		part1: Array<Array<number>>;
-		part2: Array<Array<number>>;
-	};
-	onFinish: ({
-		eatenFoodCount,
-		brain,
-		lifespan,
-		scores,
-	}: {
-		index: number;
-		lifespan: number;
-		scores: number;
-		eatenFoodCount: number;
-		brain: {
-			part1: Array<Array<number>>;
-			part2: Array<Array<number>>;
-		};
-	}) => void;
+	brain: Brain;
+	onFinish: (stat: Stat) => void;
 };
+
 export const Game: FC<GameProps> = ({ onFinish, brain, index, speed }) => {
 	const [snake, setSnake] = useState(getDefaultSnake());
 	const [eatenFoodCount, setEatenFoodCount] = useState(0);

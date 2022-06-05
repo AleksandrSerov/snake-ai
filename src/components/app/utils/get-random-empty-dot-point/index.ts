@@ -3,7 +3,6 @@ import matches from 'lodash/matches';
 import { getRandomInt } from '../../../../utils/get-random-int';
 import { EMPTY_VALUE } from '../../constants';
 import { Dots } from '../../game';
-import { Coordinates } from '../../snake';
 
 export const getRandomEmptyDotPoint = (dots: Dots, exclude: Array<Array<number>>) => {
 	const coordsForRandom = dots

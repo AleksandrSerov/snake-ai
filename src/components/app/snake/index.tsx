@@ -16,6 +16,7 @@ import { brain } from './brain';
 export type Point = [number, number];
 export type Coordinates = Array<Point>;
 export type Direction = 'up' | 'down' | 'left' | 'right';
+
 const bodyColor = '#7DD181';
 const headColor = '#4B7F52';
 
@@ -48,12 +49,11 @@ export const Snake: React.FC<SnakeProps> = ({
 	eatenFoodCount,
 	speed,
 }) => {
+	const [, forceUpdate] = useState(0);
 	const lifespanRef = useRef(0);
-	const [coordinates, setCoordinates] = useState<Array<[number, number]>>(snake.self);
-	const refCoordinates = useRef<Array<[number, number]>>(coordinates);
+	const coordinatesRef = useRef<Array<[number, number]>>(snake.self);
 	const startRef = useRef<number>();
 	const foodRef = useRef(food);
-	const [direction, setDirection] = useState<Direction>(snake.direction);
 	const directionRef = useRef<Direction>(snake.direction);
 	const [state, setState] = useState<'alive' | 'dead'>('alive');
 
@@ -66,17 +66,13 @@ export const Snake: React.FC<SnakeProps> = ({
 	}, [snake.direction]);
 
 	useEffect(() => {
-		directionRef.current = direction;
-	}, [direction]);
-
-	useEffect(() => {
-		refCoordinates.current = coordinates;
-	}, [coordinates]);
+		coordinatesRef.current = snake.self;
+	}, [snake.self]);
 
 	useEffect(() => {
 		setState('alive');
-		setCoordinates(snake.self);
-		setDirection(snake.direction);
+		coordinatesRef.current = snake.self;
+		directionRef.current = snake.direction;
 		lifespanRef.current = 0;
 	}, [brainProp]);
 
@@ -99,97 +95,83 @@ export const Snake: React.FC<SnakeProps> = ({
 	}, []);
 
 	const handleTick = (timestamp: number) => {
-		console.log('tick');
+		if (state === 'dead') {
+			return;
+		}
 		if (!startRef.current) {
 			startRef.current = timestamp;
 		}
 		const elapsed = timestamp - startRef.current;
+		const AIScale = enabledAI ? 1 : 10;
 
-		if (elapsed <= 16 * (1 / (speed / 100))) {
+		if (elapsed <= 16 * AIScale * (1 / (speed / 100))) {
 			window.requestAnimationFrame(handleTick);
 
 			return;
 		}
 		startRef.current = timestamp;
-		const dir = brain.think({
-			snake: refCoordinates.current,
+
+		const newDirection = brain.think({
+			snake: coordinatesRef.current,
 			food: foodRef.current,
 			brain: brainProp,
 		});
 
 		if (enabledAI) {
-			handleMove(dir);
+			directionRef.current = newDirection;
 		}
+
+		const resultDirection = directionRef.current || newDirection;
+
+		directionRef.current = resultDirection;
+		handleMove();
 
 		window.requestAnimationFrame(handleTick);
 	};
 
-	const handleMove = (direction: Direction) => {
-		if (state !== 'alive') {
+	const handleMove = () => {
+		if (state === 'dead') {
 			return;
 		}
 		lifespanRef.current = lifespanRef.current + 1;
 
 		const {
 			state: newState,
-			self: updatedSnake,
+			self: newSelf,
 			foodEaten,
-		} = getNextTickSnake(refCoordinates.current, direction, dots, foodRef.current);
+		} = getNextTickSnake(coordinatesRef.current, directionRef.current, dots, foodRef.current);
 
-		setCoordinates(updatedSnake);
+		coordinatesRef.current = newSelf;
 		setState(newState);
 
 		if (foodEaten) {
-			onFoodEaten(updatedSnake);
+			onFoodEaten(newSelf);
 		}
+		forceUpdate((prev) => prev + 1);
 	};
 
 	const handleChooseDirection = (e: KeyboardEvent) => {
-		if (state !== 'alive') {
+		if (state === 'dead') {
 			return;
 		}
+		const { code } = e;
 
-		if (!isControlKey(e.code)) {
+		if (!isControlKey(code)) {
 			return;
 		}
-
-		const code = e.code;
 
 		const newDirection = DIRECTION_BY_KEY[code];
 
 		const isOppositeDirection = directionRef.current === OPPOSITE_DIRECTION[newDirection];
 
 		const isSameDirection = directionRef.current === newDirection;
+		const resultDirection =
+			isOppositeDirection || isSameDirection ? directionRef.current : newDirection;
 
-		if (isOppositeDirection) {
-			handleMove(direction);
+		directionRef.current = resultDirection;
 
-			return;
-		}
-
-		if (isSameDirection) {
-			handleMove(direction);
-
-			return;
-		}
-		setDirection(newDirection);
-
-		startRef.current = performance.now();
-		handleMove(newDirection);
-
-		window.requestAnimationFrame(handleTick);
+		handleMove();
 	};
-
-	const renderDot = ([i, j]: [number, number], index: number) => (
-		<Rectangle.Graphics
-			key={ `${i}_${j}` }
-			x={ j * dotSize }
-			y={ i * dotSize }
-			width={ dotSize }
-			height={ dotSize }
-			color={ index === 0 ? headColor : bodyColor }
-		/>
-	);
 
 	useEffect(() => {
 		window.document.addEventListener('keydown', handleChooseDirection);
@@ -201,5 +183,16 @@ export const Snake: React.FC<SnakeProps> = ({
 		return null;
 	}
 
-	return <React.Fragment>{coordinates.map(renderDot)}</React.Fragment>;
+	const renderSnakePart = ([i, j]: [number, number], index: number) => (
+		<Rectangle.Graphics
+			key={ `${i}_${j}` }
+			x={ j * dotSize }
+			y={ i * dotSize }
+			width={ dotSize }
+			height={ dotSize }
+			color={ index === 0 ? headColor : bodyColor }
+		/>
+	);
+
+	return <React.Fragment>{coordinatesRef.current.map(renderSnakePart)}</React.Fragment>;
 };

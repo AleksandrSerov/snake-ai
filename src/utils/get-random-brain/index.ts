@@ -1,5 +1,4 @@
 import brain from '../../components/app/snake/brain/brain.json';
-import { getRandomInt } from '../get-random-int';
 
 export const getRandomBrain = () => {
 	const { part1, part2 } = brain;

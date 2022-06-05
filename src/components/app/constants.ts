@@ -97,6 +97,6 @@ export const EMPTY_VALUE = 0;
 export const BORDER_VALUE = 1;
 export const FOOD_VALUE = 2;
 
-export const enabledAI = true;
+export const enabledAI = false;
 export const MAX_LIFESPAN_TICKS = 500;
-export const PARALLEL_RUNS_COUNT = 50;
+export const PARALLEL_RUNS_COUNT = 5;
