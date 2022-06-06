@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
 import {
 	BORDER_VALUE,
@@ -26,7 +26,7 @@ const DEFAULT_DOTS = (() => {
 })();
 
 const success = (lifespan: number, eatenFoodCount: number) =>
-	lifespan * Math.pow(2, eatenFoodCount);
+	Math.pow(lifespan, 2) * Math.pow(2, eatenFoodCount);
 
 export type Dots = Array<Array<typeof EMPTY_VALUE | typeof BORDER_VALUE | typeof FOOD_VALUE>>;
 type Food = [number, number] | null;

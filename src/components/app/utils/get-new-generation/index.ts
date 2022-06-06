@@ -1,5 +1,5 @@
 import { Stat } from '../../game';
-import { mixBrain } from '../mix-brain';
+import { mixBrainPart } from '../mix-brain-part';
 import { pickRandomByScores } from '../pick-random-by-scores';
 
 export const getNewGeneration = ({ length, stats }: { length: number; stats: Array<Stat> }) => {
@@ -10,8 +10,10 @@ export const getNewGeneration = ({ length, stats }: { length: number; stats: Arr
 		const pickSecondParent = pickRandomByScores(stats) || bestResult;
 
 		const brain = {
-			part1: mixBrain(pickFirstParent.brain.part1, pickSecondParent.brain.part1),
-			part2: mixBrain(pickFirstParent.brain.part2, pickSecondParent.brain.part2),
+			part1: mixBrainPart(pickFirstParent.brain.part1, pickSecondParent.brain.part1)
+				.brainPart,
+			part2: mixBrainPart(pickFirstParent.brain.part2, pickSecondParent.brain.part2)
+				.brainPart,
 		};
 
 		return {

@@ -90,7 +90,7 @@ export const App: FC = () => {
 				{games.map((item, i) => (
 					<Game
 						// eslint-disable-next-line react/no-array-index-key
-						key={ `${i}_${item.brain.part1[0][0].toFixed(2)}` }
+						key={ i }
 						index={ i }
 						onFinish={ handleFinish }
 						brain={ item.brain }

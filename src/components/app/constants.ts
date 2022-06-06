@@ -88,8 +88,8 @@ export const getDefaultSnake = () => {
 	const randomInt = getRandomInt(resArr.length - 1);
 
 	return {
-		self: resArr[0] as Array<[number, number]>,
-		direction: directions[0] as Direction,
+		self: resArr[randomInt] as Array<[number, number]>,
+		direction: directions[randomInt] as Direction,
 	};
 };
 
@@ -98,5 +98,6 @@ export const BORDER_VALUE = 1;
 export const FOOD_VALUE = 2;
 
 export const enabledAI = true;
-export const MAX_LIFESPAN_TICKS = 500;
+export const MAX_LIFESPAN_TICKS = 250;
 export const PARALLEL_RUNS_COUNT = 50;
+export const MAX_MUTATION_RATE = 0.03;
