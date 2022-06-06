@@ -33,14 +33,6 @@ export const mixBrainPart = (part1: Array<Array<number>>, part2: Array<Array<num
 			return part2[i][j];
 		}),
 	);
-	const mutationRate = parseFloat((mutationCount / totalGenes).toFixed(2));
-	const maxMutationRate = parseFloat((maxMutationsCount / totalGenes).toFixed(2));
-	const firstParentGenesRate = parseFloat((firstParentGenes / totalGenes).toFixed(2));
-	const secondParentGenesRate = parseFloat((secondParentGenes / totalGenes).toFixed(2));
-
-	// console.log('mutation rate - ', mutationRate, '%');
-	// console.log('firstParentGenes rate - ', firstParentGenesRate, '%');
-	// console.log('secondParentGenesRate rate - ', secondParentGenesRate, '%');
 
 	return {
 		brainPart: newBrainPart,
