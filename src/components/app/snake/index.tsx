@@ -46,7 +46,6 @@ export const Snake: React.FC<SnakeProps> = ({
 	food,
 	onFoodEaten,
 	onStateChange,
-	eatenFoodCount,
 	speed,
 }) => {
 	const [update, forceUpdate] = useState(0);
@@ -56,7 +55,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const startRef = useRef<number>();
 	const foodRef = useRef(food);
 	const directionRef = useRef<Direction>(snake.direction);
-	const [state, setState] = useState<'alive' | 'dead'>('alive');
+	const stateRef = useRef<'alive' | 'dead'>('alive');
 
 	useEffect(() => {
 		foodRef.current = food;
@@ -71,34 +70,35 @@ export const Snake: React.FC<SnakeProps> = ({
 	}, [snake.self]);
 
 	useEffect(() => {
-		setState('alive');
 		coordinatesRef.current = snake.self;
 		directionRef.current = snake.direction;
 		lifespanRef.current = 0;
 		brainRef.current = brainProp;
 		foodRef.current = food;
+		startRef.current = undefined;
+		stateRef.current = 'alive';
+		window.requestAnimationFrame(handleTick);
 	}, [brainProp]);
 
 	useEffect(() => {
-		if (state === 'dead') {
-			onStateChange(state, lifespanRef.current);
+		if (stateRef.current === 'dead') {
+			onStateChange(stateRef.current, lifespanRef.current);
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state]);
-
-	useEffect(() => {
-		if (lifespanRef.current >= MAX_LIFESPAN_TICKS + eatenFoodCount * 500 && state !== 'dead') {
-			setState('dead');
-		}
 	}, [update]);
 
 	useEffect(() => {
-		window.requestAnimationFrame(handleTick);
-	}, []);
+		const maxLifespan = MAX_LIFESPAN_TICKS + (coordinatesRef.current.length - 4) * 500;
+
+		if (lifespanRef.current >= maxLifespan && stateRef.current !== 'dead') {
+			forceUpdate((prev) => prev + 1);
+			stateRef.current = 'dead';
+		}
+	}, [update]);
 
 	const handleTick = (timestamp: number) => {
-		if (state === 'dead') {
+		if (stateRef.current === 'dead') {
 			return;
 		}
 		if (!startRef.current) {
@@ -135,7 +135,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	};
 
 	const handleMove = () => {
-		if (state === 'dead') {
+		if (stateRef.current === 'dead') {
 			return;
 		}
 		lifespanRef.current = lifespanRef.current + 1;
@@ -147,7 +147,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		} = getNextTickSnake(coordinatesRef.current, directionRef.current, dots, foodRef.current);
 
 		coordinatesRef.current = newSelf;
-		setState(newState);
+		stateRef.current = newState;
 
 		if (foodEaten) {
 			onFoodEaten(newSelf);
@@ -156,7 +156,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	};
 
 	const handleChooseDirection = (e: KeyboardEvent) => {
-		if (state === 'dead') {
+		if (stateRef.current === 'dead') {
 			return;
 		}
 		const { code } = e;
@@ -184,7 +184,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		return () => window.document.removeEventListener('keydown', handleChooseDirection);
 	});
 
-	if (state === 'dead') {
+	if (stateRef.current === 'dead') {
 		return null;
 	}
 
