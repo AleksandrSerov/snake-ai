@@ -51,6 +51,7 @@ export const Snake: React.FC<SnakeProps> = ({
 }) => {
 	const [update, forceUpdate] = useState(0);
 	const lifespanRef = useRef(0);
+	const brainRef = useRef(brainProp);
 	const coordinatesRef = useRef<Array<[number, number]>>(snake.self);
 	const startRef = useRef<number>();
 	const foodRef = useRef(food);
@@ -74,6 +75,8 @@ export const Snake: React.FC<SnakeProps> = ({
 		coordinatesRef.current = snake.self;
 		directionRef.current = snake.direction;
 		lifespanRef.current = 0;
+		brainRef.current = brainProp;
+		foodRef.current = food;
 	}, [brainProp]);
 
 	useEffect(() => {
@@ -102,7 +105,7 @@ export const Snake: React.FC<SnakeProps> = ({
 			startRef.current = timestamp;
 		}
 		const elapsed = timestamp - startRef.current;
-		const AIScale = enabledAI ? 1 : 10;
+		const AIScale = enabledAI ? 0.5 : 10;
 
 		if (elapsed <= 16 * AIScale * (1 / (speed / 100))) {
 			window.requestAnimationFrame(handleTick);
@@ -114,7 +117,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		const newDirection = brain.think({
 			snake: coordinatesRef.current,
 			food: foodRef.current,
-			brain: brainProp,
+			brain: brainRef.current,
 		});
 
 		if (enabledAI) {

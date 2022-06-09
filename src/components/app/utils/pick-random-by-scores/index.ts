@@ -1,27 +1,33 @@
-export const pickRandomByScores = (
-	snakes: Array<{
-		index: number;
-		scores: number;
-		eatenFoodCount: number;
-		brain: {
-			part1: Array<Array<number>>;
-			part2: Array<Array<number>>;
-		};
-	}>,
+export const pseudoRandomByValue = <Item extends Record<string, any>>(
+	items: Array<Item>,
+	key: keyof Item,
 ) => {
-	const sumScores = Math.round(snakes.reduce((acc, { scores }) => acc + scores, 0));
+	const sumValue = Math.round(items.reduce((acc, item) => acc + item[key], 0));
 
-	const forRandom = snakes.map(({ scores, index }) => ({
+	const forRandom = items.map((item, index) => ({
 		index,
-		res: Math.round((scores / sumScores) * 100),
+		percent: parseFloat((item[key] / sumValue).toFixed(2)),
 	}));
 
-	const arrforRandom = forRandom
-		.map(({ index, res }) => String(index).repeat(res).split('').map(Number))
+	const arrForRandom = forRandom
+		.map(({ index, percent: chance }) =>
+			String(index)
+				.repeat(chance * 100)
+				.split('')
+				.map(() => items[index]),
+		)
 		.flat();
 
-	const targetIndex = arrforRandom[Math.trunc(Math.random() * forRandom.length)];
-	const result = snakes[targetIndex];
+	const targetIndex = Math.trunc(Math.random() * arrForRandom.length);
+	const item = arrForRandom[targetIndex];
 
-	return result;
+	return {
+		item,
+		stats: {
+			sumValue,
+			forRandom,
+			arrForRandom,
+			targetIndex,
+		},
+	};
 };

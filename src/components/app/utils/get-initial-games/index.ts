@@ -1,9 +1,8 @@
-import { Brain } from '../../game';
+import { getRandomBrain } from '../../../../utils/get-random-brain';
+import brain from '../../snake/brain/brain.json';
+const defaultBrain = getRandomBrain();
 
-export const getInitialGames = (count: number, brain: Brain) =>
+export const getInitialGames = (count: number) =>
 	new Array(count).fill(null).map(() => ({
-		brain: {
-			part1: brain.part1,
-			part2: brain.part2,
-		},
+		brain: defaultBrain,
 	}));

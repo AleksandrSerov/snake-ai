@@ -26,7 +26,7 @@ const DEFAULT_DOTS = (() => {
 })();
 
 const success = (lifespan: number, eatenFoodCount: number) =>
-	Math.pow(lifespan, 2) * Math.pow(2, eatenFoodCount);
+	lifespan * Math.pow(2, 1 + eatenFoodCount);
 
 export type Dots = Array<Array<typeof EMPTY_VALUE | typeof BORDER_VALUE | typeof FOOD_VALUE>>;
 type Food = [number, number] | null;

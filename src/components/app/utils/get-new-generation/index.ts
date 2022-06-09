@@ -1,13 +1,11 @@
 import { Stat } from '../../game';
 import { mixBrainPart } from '../mix-brain-part';
-import { pickRandomByScores } from '../pick-random-by-scores';
+import { pseudoRandomByValue } from '../pick-random-by-scores';
 
-export const getNewGeneration = ({ length, stats }: { length: number; stats: Array<Stat> }) => {
-	const bestResult = [...stats].sort((a, b) => b.scores - a.scores)[0];
-
-	return new Array(length).fill(null).map(() => {
-		const pickFirstParent = pickRandomByScores(stats) || bestResult;
-		const pickSecondParent = pickRandomByScores(stats) || bestResult;
+export const getNewGeneration = ({ length, stats }: { length: number; stats: Array<Stat> }) =>
+	new Array(length).fill(null).map(() => {
+		const pickFirstParent = pseudoRandomByValue(stats, 'scores').item;
+		const pickSecondParent = pseudoRandomByValue(stats, 'scores').item;
 
 		const brain = {
 			part1: mixBrainPart(pickFirstParent.brain.part1, pickSecondParent.brain.part1)
@@ -20,4 +18,3 @@ export const getNewGeneration = ({ length, stats }: { length: number; stats: Arr
 			brain,
 		};
 	});
-};

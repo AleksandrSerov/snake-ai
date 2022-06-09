@@ -1,8 +1,7 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { Stage } from '@inlet/react-pixi';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
-import defaultBrain from './snake/brain/brain.json';
 import { getInitialGames } from './utils/get-initial-games';
 import { getNewGeneration } from './utils/get-new-generation';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_DOT_SIZE, PARALLEL_RUNS_COUNT } from './constants';
@@ -10,9 +9,10 @@ import { Game, GameProps, Stat } from './game';
 import { Grid } from './grid';
 
 import styles from './index.module.css';
+const initalGames = getInitialGames(PARALLEL_RUNS_COUNT);
 
 export const App: FC = () => {
-	const [games, setGames] = useState(getInitialGames(PARALLEL_RUNS_COUNT, defaultBrain));
+	const [games, setGames] = useState(initalGames);
 	const statsRef = useRef<Array<Stat>>([]);
 	const [speed, setSpeed] = useState(100);
 
@@ -22,40 +22,34 @@ export const App: FC = () => {
 		[],
 	);
 
-	const handleFinish: GameProps['onFinish'] = useCallback(
-		(stat) => {
-			statsRef.current.push({
-				...stat,
-			});
+	const handleFinish: GameProps['onFinish'] = (stat) => {
+		statsRef.current.push({
+			...stat,
+		});
 
-			if (statsRef.current.length !== PARALLEL_RUNS_COUNT) {
-				return;
-			}
+		if (statsRef.current.length !== PARALLEL_RUNS_COUNT) {
+			return;
+		}
 
-			const bestResult = [...statsRef.current].sort((a, b) => b.scores - a.scores)[0];
+		const bestResult = [...statsRef.current].sort((a, b) => b.scores - a.scores)[0];
 
-			console.log(bestResult);
-			const sumScores = Math.trunc(
-				statsRef.current.reduce((acc, { scores }) => acc + scores, 0),
-			);
+		console.log(bestResult);
+		const sumScores = Math.trunc(statsRef.current.reduce((acc, { scores }) => acc + scores, 0));
 
-			setData((prevData) => [
-				...prevData,
-				{ generation, best: bestResult.scores, average: sumScores / PARALLEL_RUNS_COUNT },
-			]);
-			setBest(bestResult);
-			setGeneration((prev) => prev + 1);
+		setData((prevData) => [
+			...prevData,
+			{ generation, best: bestResult.scores, average: sumScores / PARALLEL_RUNS_COUNT },
+		]);
+		setBest(bestResult);
+		setGeneration((prev) => prev + 1);
+		const newGeneration = getNewGeneration({
+			length: PARALLEL_RUNS_COUNT,
+			stats: statsRef.current,
+		});
 
-			const newGeneration = getNewGeneration({
-				length: PARALLEL_RUNS_COUNT,
-				stats: statsRef.current,
-			});
-
-			statsRef.current = [];
-			setGames(newGeneration);
-		},
-		[generation],
-	);
+		statsRef.current = [];
+		setGames(newGeneration);
+	};
 
 	const handleSpeedChange = (e: KeyboardEvent) => {
 		if (e.code === 'Minus') {
@@ -88,14 +82,8 @@ export const App: FC = () => {
 				} }
 			>
 				{games.map((item, i) => (
-					<Game
-						// eslint-disable-next-line react/no-array-index-key
-						key={ i }
-						index={ i }
-						onFinish={ handleFinish }
-						brain={ item.brain }
-						speed={ speed }
-					/>
+					// eslint-disable-next-line react/jsx-key
+					<Game index={ i } onFinish={ handleFinish } brain={ item.brain } speed={ speed } />
 				))}
 				<Grid width={ CANVAS_WIDTH } height={ CANVAS_HEIGHT } dotWidth={ DEFAULT_DOT_SIZE } />
 			</Stage>
