@@ -27,17 +27,6 @@ body {
 	grid-gap: 20px;
 }
 
-.canvas_93070a {
-	display: grid;
-	border: 1px solid black;
-}
-
-.dropdownButton_93070a {
-	cursor: pointer;
-	text-transform: uppercase;
-	text-align: right;
-}
-
 *,
 body {
 	margin: 0;
