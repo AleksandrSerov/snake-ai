@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { Stage } from '@inlet/react-pixi';
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Label, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import { getInitialGames } from './utils/get-initial-games';
 import { getNewGeneration } from './utils/get-new-generation';
@@ -73,7 +73,6 @@ export const App: FC = () => {
 	return (
 		<div className={ styles.app }>
 			<Stage
-				className={ styles.canvas }
 				width={ CANVAS_WIDTH }
 				height={ CANVAS_HEIGHT }
 				options={ {
@@ -89,25 +88,28 @@ export const App: FC = () => {
 			</Stage>
 			<div>
 				<div>
-					<div>generation number - {generation}</div>
-					<div>current speed - {speed} %</div>
-
-					<div>eatenFoodCount - {best?.eatenFoodCount}</div>
-					<div>lifespan - {best?.lifespan}</div>
-					<div>scores - {best?.scores}</div>
+					<div>Generation number - {generation}</div>
+					<div>Current speed - {speed} %</div>
+					<br />
+					<div>Last generation best stat:</div>
+					<div>Eaten food - {best?.eatenFoodCount}</div>
+					<div>Lifespan - {best?.lifespan}</div>
+					<div>Scores - {best?.scores}</div>
 				</div>
-				Average scores/generation
 				<LineChart width={ 500 } height={ 300 } data={ data }>
 					<Line type='monotone' dataKey='average' stroke='#1884d8' />
 					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
-					<XAxis dataKey='generation' />
+					<XAxis dataKey='generation' height={ 45 }>
+						<Label position='insideBottom' value='Average scores/generation' />
+					</XAxis>
 					<YAxis />
 				</LineChart>
-				Last generation best scores
 				<LineChart width={ 500 } height={ 300 } data={ data }>
 					<Line type='monotone' dataKey='best' stroke='#8884d8' />
 					<CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
-					<XAxis dataKey='generation' />
+					<XAxis dataKey='generation' height={ 45 }>
+						<Label position='insideBottom' value='Last generation best scores' />
+					</XAxis>
 					<YAxis />
 				</LineChart>
 			</div>

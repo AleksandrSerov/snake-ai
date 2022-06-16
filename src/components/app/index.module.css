@@ -3,14 +3,3 @@
 	grid-template-columns: min-content 1fr;
 	grid-gap: 20px;
 }
-
-.canvas {
-	display: grid;
-	border: 1px solid black;
-}
-
-.dropdownButton {
-	cursor: pointer;
-	text-transform: uppercase;
-	text-align: right;
-}

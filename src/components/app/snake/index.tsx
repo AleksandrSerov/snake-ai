@@ -56,6 +56,7 @@ export const Snake: React.FC<SnakeProps> = ({
 	const foodRef = useRef(food);
 	const directionRef = useRef<Direction>(snake.direction);
 	const stateRef = useRef<'alive' | 'dead'>('alive');
+	const speedRef = useRef(speed);
 
 	useEffect(() => {
 		foodRef.current = food;
@@ -68,6 +69,10 @@ export const Snake: React.FC<SnakeProps> = ({
 	useEffect(() => {
 		coordinatesRef.current = snake.self;
 	}, [snake.self]);
+
+	useEffect(() => {
+		speedRef.current = speed;
+	}, [speed]);
 
 	useEffect(() => {
 		coordinatesRef.current = snake.self;
@@ -107,7 +112,7 @@ export const Snake: React.FC<SnakeProps> = ({
 		const elapsed = timestamp - startRef.current;
 		const AIScale = enabledAI ? 0.5 : 10;
 
-		if (elapsed <= 16 * AIScale * (1 / (speed / 100))) {
+		if (elapsed <= 16 * AIScale * (1 / (speedRef.current / 100))) {
 			window.requestAnimationFrame(handleTick);
 
 			return;
