@@ -98,6 +98,6 @@ export const BORDER_VALUE = 1;
 export const FOOD_VALUE = 2;
 
 export const enabledAI = true;
-export const MAX_LIFESPAN_TICKS = 140;
-export const PARALLEL_RUNS_COUNT = 100;
+export const MAX_LIFESPAN_TICKS = 150;
+export const PARALLEL_RUNS_COUNT = 200;
 export const MAX_MUTATION_RATE = 0.02;

@@ -5,12 +5,16 @@ import Stats from 'stats.js';
 import { App } from './app';
 
 import './global.module.css';
-import styles from './index.module.css';
 
 const initStats = () => {
 	const stats = new Stats();
 
 	stats.showPanel(0);
+	console.log(stats.dom);
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
+	stats.dom.style =
+		'position: fixed; top: 0px; right: 0px; cursor: pointer; opacity: 0.9; z-index: 10000;';
 	document.body.appendChild(stats.dom);
 
 	const animate = () => {
