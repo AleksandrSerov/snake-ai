@@ -27,7 +27,7 @@ export const App: FC = () => {
 			...stat,
 		});
 
-		if (statsRef.current.length !== PARALLEL_RUNS_COUNT) {
+		if (statsRef.current.length !== games.length) {
 			return;
 		}
 
@@ -38,12 +38,12 @@ export const App: FC = () => {
 
 		setData((prevData) => [
 			...prevData,
-			{ generation, best: bestResult.scores, average: sumScores / PARALLEL_RUNS_COUNT },
+			{ generation, best: bestResult.scores, average: sumScores / games.length },
 		]);
 		setBest(bestResult);
 		setGeneration((prev) => prev + 1);
 		const newGeneration = getNewGeneration({
-			length: PARALLEL_RUNS_COUNT,
+			length: games.length,
 			stats: statsRef.current,
 		});
 
@@ -62,6 +62,28 @@ export const App: FC = () => {
 
 			return;
 		}
+	};
+
+	const handleTrainedClick = (e: any) => {
+		const checked = e.target.checked;
+
+		setGeneration(1);
+		statsRef.current = [];
+		setBest(null);
+		setData([]);
+		if (checked) {
+			const newGeneration = getNewGeneration({
+				length: 3,
+				stats: statsRef.current,
+				useTrained: true,
+			});
+
+			setGames(newGeneration);
+
+			return;
+		}
+
+		setGames(initalGames);
 	};
 
 	useEffect(() => {
@@ -88,8 +110,17 @@ export const App: FC = () => {
 			</Stage>
 			<div>
 				<div>
+					<label
+						htmlFor='trained'
+						onClick={ handleTrainedClick }
+						className={ styles.checkbox }
+					>
+						<input type='checkbox' id='trained' />
+						<span>Use trained snake</span>
+					</label>
+				</div>
+				<div>
 					<div>Generation number - {generation}</div>
-					<div>Current speed - {speed} %</div>
 					<br />
 					<div>Last generation best stat:</div>
 					<div>Eaten food - {best?.eatenFoodCount}</div>

@@ -110,7 +110,7 @@ export const Snake: React.FC<SnakeProps> = ({
 			startRef.current = timestamp;
 		}
 		const elapsed = timestamp - startRef.current;
-		const AIScale = enabledAI ? 0.5 : 10;
+		const AIScale = enabledAI ? 1 : 10;
 
 		if (elapsed <= 16 * AIScale * (1 / (speedRef.current / 100))) {
 			window.requestAnimationFrame(handleTick);
@@ -183,11 +183,11 @@ export const Snake: React.FC<SnakeProps> = ({
 		handleMove();
 	};
 
-	useEffect(() => {
-		window.document.addEventListener('keydown', handleChooseDirection);
+	// useEffect(() => {
+	// 	window.document.addEventListener('keydown', handleChooseDirection);
 
-		return () => window.document.removeEventListener('keydown', handleChooseDirection);
-	});
+	// 	return () => window.document.removeEventListener('keydown', handleChooseDirection);
+	// });
 
 	if (stateRef.current === 'dead') {
 		return null;

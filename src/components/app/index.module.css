@@ -3,3 +3,11 @@
 	grid-template-columns: min-content 1fr;
 	grid-gap: 20px;
 }
+
+.checkbox {
+	display: grid;
+	height: 25px;
+	grid-gap: 5px;
+	grid-template-columns: 20px 1fr;
+	align-items: center;
+}

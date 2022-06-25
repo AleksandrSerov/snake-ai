@@ -10,7 +10,6 @@ const initStats = () => {
 	const stats = new Stats();
 
 	stats.showPanel(0);
-	console.log(stats.dom);
 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	stats.dom.style =
