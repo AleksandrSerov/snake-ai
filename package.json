@@ -15,7 +15,7 @@
 		"lint:scripts": "eslint \"**/*.{js,jsx,ts,tsx}\" --ext .js,.jsx,.ts,.tsx",
 		"format": "prettier-eslint --write \"./{src,cypress}/**/*.{ts,tsx,css}\"",
 		"build": "yarn ts:check && rm -rf dist && parcel build --no-source-maps --public-url . ./src/index.html",
-		"deploy": "gh-pages -d dist",
+		"deploy": "yarn build && gh-pages -d dist",
 		"postinstall": "npx simple-git-hooks"
 	},
 	"author": "Aleksandr Serov",
