@@ -29,7 +29,7 @@
 		"lodash": "^4.17.21",
 		"lodash.matches": "^4.6.0",
 		"parcel": "^2.2.1",
-		"pixi.js": "^6.3.1",
+		"pixi.js": "^6.5.5",
 		"react": "17.0.0",
 		"react-dom": "17.0.0",
 		"recharts": "^2.1.10",
